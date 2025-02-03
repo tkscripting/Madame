@@ -97,25 +97,31 @@
         }
     }
 
+    // Ensure that the script runs on page load and refresh (on the initial load)
+    window.addEventListener('load', function() {
+        setTimeout(runOnURLChange, 1500);  // Run after a small delay to allow page content to load
+    });
+
+    // Ensure the script runs when the URL changes within the same page (using pushState and popstate)
     (function(history) {
         const pushState = history.pushState;
         history.pushState = function(state) {
             if (typeof history.onpushstate == "function") {
                 history.onpushstate({state: state});
             }
-            setTimeout(runOnURLChange, 1000);
+            setTimeout(runOnURLChange, 1000);  // Trigger on URL change
             return pushState.apply(history, arguments);
         };
     })(window.history);
 
     window.addEventListener('popstate', function() {
-        setTimeout(runOnURLChange, 1500);
+        setTimeout(runOnURLChange, 1500);  // Trigger on back/forward navigation
     });
 
-    window.addEventListener('load', function() {
-        setTimeout(runOnURLChange, 1500);
-    });
+    // Adding a small delay before the initial run on page load to ensure everything is loaded properly
+    setTimeout(runOnURLChange, 2000);
 
+    // Add CSS styling for the PID elements
     const style = document.createElement('style');
     style.innerHTML = `
         .pid-wrapper {
