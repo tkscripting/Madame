@@ -1,0 +1,381 @@
+(function() {
+    'use strict';
+
+    let isSwitchOn = false; // Flag to check if the switch is on
+
+    // Add ID to MuiBox elements
+    function addIdToMuiBoxElements() {
+        const parentElement = document.querySelector('.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation2.css-1m9yl2a');
+
+        if (parentElement) {
+            const boxElements = parentElement.children;
+
+            Array.from(boxElements).forEach((box) => {
+                if (box.classList.contains('MuiBox-root') && box.classList.contains('css-0')) {
+                    if (!box.id) {
+                        box.id = 'VID';
+                    }
+                }
+            });
+        } else {
+            console.log('Parent .MuiPaper-root not found.');
+        }
+    }
+
+    setTimeout(() => {
+        addIdToMuiBoxElements();
+    }, 500);
+
+    // Create the switch element
+    function createSwitch() {
+        const switchWrapper = document.createElement('div');
+        switchWrapper.style.display = 'inline-block';
+
+        const switchLabel = document.createElement('label');
+        switchLabel.style.position = 'relative';
+        switchLabel.style.display = 'inline-block';
+        switchLabel.style.width = '50px';
+        switchLabel.style.height = '24px';
+        switchLabel.style.cursor = 'pointer';
+        switchLabel.style.borderRadius = '50px';
+        switchLabel.style.backgroundColor = '#ccc';
+        switchLabel.style.transition = 'background-color 0.3s ease';
+
+        const switchInput = document.createElement('input');
+        switchInput.type = 'checkbox';
+        switchInput.style.opacity = '0';
+        switchInput.style.width = '0';
+        switchInput.style.height = '0';
+
+        const switchCircle = document.createElement('span');
+        switchCircle.style.position = 'absolute';
+        switchCircle.style.top = '4px';
+        switchCircle.style.left = '4px';
+        switchCircle.style.width = '16px';
+        switchCircle.style.height = '16px';
+        switchCircle.style.borderRadius = '50%';
+        switchCircle.style.backgroundColor = '#fff';
+        switchCircle.style.transition = 'transform 0.3s ease';
+
+        switchLabel.appendChild(switchInput);
+        switchLabel.appendChild(switchCircle);
+        switchWrapper.appendChild(switchLabel);
+
+        // Load saved state from localStorage
+        const savedState = localStorage.getItem('switchState');
+        if (savedState === 'on') {
+            switchInput.checked = true;
+            switchLabel.style.backgroundColor = '#4cd964';
+            switchCircle.style.transform = 'translateX(26px)';
+            hideElementsWithoutImages();
+            changeTextContent();
+            changePathColor();  // Change path color to magenta
+            isSwitchOn = true;
+        } else {
+            switchInput.checked = false;
+            switchLabel.style.backgroundColor = '#ccc';
+            switchCircle.style.transform = 'translateX(0)';
+            showElementsWithoutImages();
+            resetTextContent();
+            resetPathColor();  // Reset path color
+            isSwitchOn = false;
+        }
+
+        // Toggle switch state
+        switchInput.addEventListener('change', function() {
+            if (switchInput.checked) {
+                switchLabel.style.backgroundColor = '#4cd964';
+                switchCircle.style.transform = 'translateX(26px)';
+                hideElementsWithoutImages();
+                changeTextContent();
+                changePathColor();  // Change path color to magenta when the switch is on
+                localStorage.setItem('switchState', 'on');
+                isSwitchOn = true;
+            } else {
+                switchLabel.style.backgroundColor = '#ccc';
+                switchCircle.style.transform = 'translateX(0)';
+                showElementsWithoutImages();
+                resetTextContent();
+                resetPathColor();  // Reset path color when the switch is off
+                localStorage.setItem('switchState', 'off');
+                isSwitchOn = false;
+            }
+        });
+
+        return switchWrapper;
+    }
+
+    // Create text element
+    function createText() {
+        const textWrapper = document.createElement('span');
+        textWrapper.style.marginLeft = '10px';
+        textWrapper.style.fontSize = '1rem';
+        textWrapper.style.fontWeight = 'normal';
+        textWrapper.style.color = '#333';
+        textWrapper.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
+        textWrapper.innerText = 'Optimize List';
+
+        return textWrapper;
+    }
+
+    // Append switch and text to target element
+    function appendSwitchAndTextToTarget() {
+        const targetElementSelector = '.MuiGrid-root.MuiGrid-item.css-bl06vm';
+        const targetElement = document.querySelector(targetElementSelector);
+
+        if (targetElement) {
+            const switchElement = createSwitch();
+            const textElement = createText();
+
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'flex-start';  // Keep them aligned to the left
+            container.style.width = 'auto';                  // Let the width auto-adjust based on content
+            container.style.flexShrink = '0';                // Prevent shrinking
+
+            container.appendChild(switchElement);
+            container.appendChild(textElement);
+
+            container.style.marginTop = '14px';
+            container.style.marginLeft = '20px';
+
+            targetElement.insertAdjacentElement('afterend', container);
+            console.log('Switch and "Optimize List" added after the target element.');
+        } else {
+            console.log('Target element not found, retrying...');
+        }
+    }
+
+    // Function to limit width of .MuiBox-root.css-o744zt to 100% of the viewport
+    function limitWidthToViewport() {
+        const boxElement = document.querySelector('.MuiBox-root.css-o744zt');
+        if (boxElement) {
+            boxElement.style.width = '100vw';      // Limit the width to 100% of the viewport
+            boxElement.style.maxWidth = '100vw';   // Ensure no width overflow
+            boxElement.style.overflowX = 'hidden'; // Hide horizontal overflow (no horizontal scrollbar)
+            boxElement.style.overflowY = 'auto';   // Allow vertical scrolling if content overflows
+        }
+    }
+
+    // Function to hide elements without images
+    function hideElementsWithoutImages() {
+        const parentContainers = document.querySelectorAll('.MuiBox-root.css-caosg6');
+        parentContainers.forEach(parentContainer => {
+            const hasImage = parentContainer.querySelector('img') !== null;
+            const boxZero = parentContainer.closest('.MuiBox-root.css-0');
+
+            if (!hasImage && boxZero) {
+                boxZero.style.display = 'none';
+            } else if (boxZero) {
+                boxZero.style.display = '';
+            }
+
+            const childElements = parentContainer.querySelectorAll('.MuiBox-root.css-hfakad');
+            childElements.forEach(element => {
+                const hasImageInChild = element.querySelector('img') !== null;
+                if (!hasImageInChild) {
+                    element.style.display = 'none';
+                }
+            });
+        });
+
+        // New logic to hide .MuiBox-root.css-0 inside .MuiBox-root.css-gg4vpm
+        const gg4vpmContainers = document.querySelectorAll('.MuiBox-root.css-gg4vpm');
+        gg4vpmContainers.forEach(container => {
+            const childBoxZeroElements = container.querySelectorAll('.MuiBox-root.css-0');
+            childBoxZeroElements.forEach(child => {
+                child.style.display = 'none'; // Hide the child element
+            });
+        });
+
+        // Handling for .MuiBox-root.css-hboir5 and .MuiBox-root.css-0 visibility based on switch
+        const hboir5Containers = document.querySelectorAll('.MuiBox-root.css-hboir5');
+        hboir5Containers.forEach(container => {
+            const boxZeroInside = container.querySelectorAll('.MuiBox-root.css-0');
+            boxZeroInside.forEach(boxZero => {
+                boxZero.style.display = 'none'; // Initially hide these elements
+            });
+        });
+
+        const box178ykluElements = document.querySelectorAll('.MuiBox-root.css-178yklu');
+        box178ykluElements.forEach(element => {
+            const parentContainer = element.parentElement;
+            const parentWidth = parentContainer.offsetWidth;
+            element.style.position = 'relative'; // Set relative positioning (or absolute if needed)
+            element.style.left = '50%'; // Move the element 50% to the right
+            element.style.transform = 'translateX(-50%)';
+            element.style.width = '60%';
+        });
+    }
+
+// Function to show elements without images (including .MuiBox-root.css-0 inside .MuiBox-root.css-hboir5)
+function showElementsWithoutImages() {
+    const parentContainers = document.querySelectorAll('.MuiBox-root.css-caosg6');
+    parentContainers.forEach(parentContainer => {
+        const childElements = parentContainer.querySelectorAll('.MuiBox-root.css-hfakad');
+        childElements.forEach(element => {
+            element.style.display = '';  // Reset display to show all child elements
+        });
+    });
+
+    const box178ykluElements = document.querySelectorAll('.MuiBox-root.css-178yklu');
+    box178ykluElements.forEach(element => {
+        element.style.width = '100%'; // Reset width to 100% of its container
+    });
+
+    // Show .MuiBox-root.css-0 inside .MuiBox-root.css-hboir5 when the switch is turned off
+    const hboir5Containers = document.querySelectorAll('.MuiBox-root.css-hboir5');
+    hboir5Containers.forEach(container => {
+        const boxZeroInside = container.querySelectorAll('.MuiBox-root.css-0');
+        boxZeroInside.forEach(boxZero => {
+            boxZero.style.display = ''; // Revert to normal display (make it visible)
+        });
+    });
+
+    // New logic: Show elements with ID 'VID' inside .MuiBox-root.css-0
+    const boxZeroWithVid = document.querySelectorAll('.MuiBox-root.css-0#VID');
+    boxZeroWithVid.forEach(element => {
+        element.style.display = '';  // Reset display to show the element with ID 'VID'
+    });
+}
+
+
+    // Change text content based on conditions
+    function changeTextContent() {
+        const allChildElements = document.querySelectorAll('.MuiBox-root.css-hfakad');
+
+        allChildElements.forEach(element => {
+            const textContainer = element.querySelector('.MuiBox-root.css-b6m7zh');
+            if (textContainer) {
+                const text = textContainer.textContent.trim();
+
+                switch (text) {
+                    case "Front Still Life":
+                        textContainer.textContent = "Index";
+                        break;
+                    case "Outfit 1":
+                        textContainer.textContent = "OU";
+                        break;
+                    case "Front Model":
+                        textContainer.textContent = "FR";
+                        break;
+                    case "Back Model":
+                        textContainer.textContent = "BK";
+                        break;
+                    case "Outfit 2":
+                        textContainer.textContent = "OU 2";
+                        break;
+                    case "Detail 1":
+                        textContainer.textContent = "CU";
+                        break;
+                    case "Side Still Life":
+                        textContainer.textContent = "E1";
+                        break;
+                    case "Detail 2":
+                        textContainer.textContent = "E2";
+                        break;
+                    case "Detail 3":
+                        textContainer.textContent = "E3";
+                        break;
+                    case "Extra 1":
+                        textContainer.textContent = "E4";
+                        break;
+                    case "Extra 2":
+                        textContainer.textContent = "E5";
+                        break;
+                }
+            }
+        });
+    }
+
+    // Reset text content
+    function resetTextContent() {
+        const allChildElements = document.querySelectorAll('.MuiBox-root.css-hfakad');
+
+        allChildElements.forEach(element => {
+            const textContainer = element.querySelector('.MuiBox-root.css-b6m7zh');
+            if (textContainer) {
+                const text = textContainer.textContent.trim();
+
+                switch (text) {
+                    case "Index":
+                        textContainer.textContent = "Front Still Life";
+                        break;
+                    case "OU":
+                        textContainer.textContent = "Outfit 1";
+                        break;
+                    case "FR":
+                        textContainer.textContent = "Front Model";
+                        break;
+                    case "BK":
+                        textContainer.textContent = "Back Model";
+                        break;
+                    case "OU 2":
+                        textContainer.textContent = "Outfit 2";
+                        break;
+                    case "CU":
+                        textContainer.textContent = "Detail 1";
+                        break;
+                    case "E1":
+                        textContainer.textContent = "Side Still Life";
+                        break;
+                    case "E2":
+                        textContainer.textContent = "Detail 2";
+                        break;
+                    case "E3":
+                        textContainer.textContent = "Detail 3";
+                        break;
+                    case "E4":
+                        textContainer.textContent = "Extra 1";
+                        break;
+                    case "E5":
+                        textContainer.textContent = "Extra 2";
+                        break;
+                }
+            }
+        });
+    }
+
+// Function to change the color of all matching paths to magenta
+function changePathColor() {
+    // Select all paths with the specific 'd' attribute
+    const paths = document.querySelectorAll('path[d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2"]');
+
+    // Iterate through all selected paths and apply magenta color
+    paths.forEach(path => {
+        path.setAttribute('fill', 'rgb(243, 114, 16)');
+    });
+}
+
+
+// Function to reset the path color for all matching paths
+function resetPathColor() {
+    // Select all paths with the specific 'd' attribute
+    const paths = document.querySelectorAll('path[d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2"]');
+
+    // Iterate through all selected paths and reset the color
+    paths.forEach(path => {
+        path.setAttribute('fill', '');  // Reset to original color
+    });
+}
+
+
+    // Mutation Observer for dynamically added elements
+    const observer = new MutationObserver((mutationsList, observer) => {
+        appendSwitchAndTextToTarget();
+        limitWidthToViewport();  // Apply width limitation to .MuiBox-root.css-o744zt
+
+        if (document.querySelector('.MuiGrid-root.MuiGrid-item.css-bl06vm')) {
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    appendSwitchAndTextToTarget();
+
+    // Listen for click events on the document
+    document.addEventListener('click', handleImageClick);
+
+})();
