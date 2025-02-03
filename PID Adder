@@ -1,9 +1,7 @@
 (function() {
     'use strict';
 
-    // Function to handle Matchmaker translation
     function matchmakerTranslate(singleProduct, matchmakerSearch) {
-        console.log('Sending request to Matchmaker for:', matchmakerSearch);
         return fetch(`https://matchmaker-api.product.ynapgroup.com/${matchmakerSearch}`, {
             credentials: 'omit',
             headers: {
@@ -20,34 +18,27 @@
         .then(jsonResponse => {
             let matchedResponses = jsonResponse.matches;
             if (matchedResponses.length === 0) {
-                console.error(`No match found for ${matchmakerSearch} in Matchmaker.`);
                 alert(`No match found for ${matchmakerSearch}. Please check Matchmaker manually.`);
                 return null;
             } else {
                 return matchedResponses[0].translatedId;
             }
         }).catch(error => {
-            console.error("Error in Matchmaker API request:", error);
             alert("There was an error with the Matchmaker request. Please try again.");
             return null;
         });
     }
 
-    // Function to check the product format (PID or Variant)
     function checkProduct(productString) {
         if (productString.match(/\d{10,19}/g)) {
-            console.log('Detected variant ID:', productString);
             return [productString.match(/\d{10,19}/g), 'variants'];
         } else if (productString.match(/\d{6,7}/g)) {
-            console.log('Detected PID:', productString);
             return [productString.match(/\d{6,7}/g), 'pids'];
         } else {
-            console.error('Invalid product format:', productString);
             return undefined;
         }
     }
 
-    // Worklist-specific logic
     function addPidToWorklist() {
         var elements = document.querySelectorAll('.css-1nyh8gd');
         elements.forEach(function(element) {
@@ -60,102 +51,77 @@
                         element.insertBefore(resultNode, element.firstChild);
                     }
                 });
-            } else {
-                console.error("Invalid product number found, please check the content:", number);
             }
         });
     }
 
-    // Retouching-specific logic
     function addPidToRetouching() {
         const productInfoValues = document.querySelectorAll('.MuiBox-root.css-33lbgp .MuiTypography-root.MuiTypography-body2.productInfoValue.css-1pngg4p');
 
         if (productInfoValues.length >= 5) {
-            const fifthValue = productInfoValues[4].textContent.trim();  // Get the 5th value (index 4)
-            console.log('5th Product Info Value:', fifthValue);
+            const fifthValue = productInfoValues[4].textContent.trim();
 
-            const product = checkProduct(fifthValue);  // Check the format of the 5th product value
+            const product = checkProduct(fifthValue);
             if (product) {
                 matchmakerTranslate(product[0], product[1]).then(resultNumber => {
                     if (resultNumber) {
-                        console.log(`PID found for ${fifthValue}: ${resultNumber}`);
-
-                        // Insert the PID and the number into the container
                         const container = document.querySelector('.MuiBox-root.css-3cb9av');
                         if (container) {
-                            // Create a container for both PID and number
                             const pidWrapper = document.createElement('span');
                             pidWrapper.classList.add('pid-wrapper');
 
-                            // Create the "PID" label
                             const pidLabel = document.createElement('span');
                             pidLabel.textContent = 'PID';
                             pidLabel.classList.add('pid-label');
 
-                            // Create the number element
                             const pidNumber = document.createElement('span');
                             pidNumber.textContent = resultNumber;
                             pidNumber.classList.add('pid-number');
 
-                            // Append the "PID" label and the number to the wrapper
                             pidWrapper.appendChild(pidLabel);
                             pidWrapper.appendChild(pidNumber);
 
-                            // Append the wrapper to the container
                             container.appendChild(pidWrapper);
-                        } else {
-                            console.error('Could not find the target container (MuiBox-root css-3cb9av).');
                         }
                     }
                 });
-            } else {
-                console.error("Invalid product number format found in 5th Product Info Value:", fifthValue);
             }
-        } else {
-            console.error('Could not find the 5th Product Info Value.');
         }
     }
 
-    // Function to run the script when the URL changes
     function runOnURLChange() {
         if (window.location.href.match(/https:\/\/madame\.ynap\.biz\/worklist\/.*/)) {
-            console.log('Running script for worklist page:', window.location.href);
-            setTimeout(addPidToWorklist, 1000);  // Delay to ensure elements are loaded
+            setTimeout(addPidToWorklist, 1000);
         } else if (window.location.href.match(/https:\/\/madame\.ynap\.biz\/retouching\/.*/)) {
-            console.log('Running script for retouching page:', window.location.href);
-            setTimeout(addPidToRetouching, 1000);  // Delay to ensure elements are loaded
+            setTimeout(addPidToRetouching, 1000);
         }
     }
 
-    // Hook into history.pushState to detect URL changes
     (function(history) {
         const pushState = history.pushState;
         history.pushState = function(state) {
             if (typeof history.onpushstate == "function") {
                 history.onpushstate({state: state});
             }
-            setTimeout(runOnURLChange, 1000);  // Delay to ensure elements are loaded
+            setTimeout(runOnURLChange, 1000);
             return pushState.apply(history, arguments);
         };
     })(window.history);
 
-    // Listen to popstate event to detect back/forward navigation
     window.addEventListener('popstate', function() {
-        setTimeout(runOnURLChange, 1500);  // Delay to ensure elements are loaded
+        setTimeout(runOnURLChange, 1500);
     });
 
-    // Run the script initially
     window.addEventListener('load', function() {
-        setTimeout(runOnURLChange, 1500);  // Delay to ensure elements are loaded
+        setTimeout(runOnURLChange, 1500);
     });
 
-    // Simplified CSS for PID label and number
     const style = document.createElement('style');
     style.innerHTML = `
         .pid-wrapper {
             display: inline-flex;
             align-items: center;
-            gap: 5px;  /* Adds a small gap between the label and number */
+            gap: 5px;
         }
 
         .pid-label {
