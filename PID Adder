@@ -1,6 +1,9 @@
 (function() {
     'use strict';
 
+    let isRunning = false;  // Flag to prevent multiple runs
+    const processedProducts = new Set();  // Cache for processed product numbers
+
     function matchmakerTranslate(singleProduct, matchmakerSearch) {
         return fetch(`https://matchmaker-api.product.ynapgroup.com/${matchmakerSearch}`, {
             credentials: 'omit',
@@ -43,12 +46,22 @@
         var elements = document.querySelectorAll('.css-1nyh8gd');
         elements.forEach(function(element) {
             var number = element.textContent.trim();
+            if (processedProducts.has(number)) {
+                return; // Skip if product has already been processed
+            }
+            processedProducts.add(number);
+            
             var product = checkProduct(number);
             if (product) {
                 matchmakerTranslate(product[0], product[1]).then(resultNumber => {
                     if (resultNumber) {
-                        var resultNode = document.createTextNode(resultNumber + ' ');
-                        element.insertBefore(resultNode, element.firstChild);
+                        // Check if the result PID is already in the DOM
+                        if (!element.querySelector('.pid-wrapper')) {
+                            var resultNode = document.createElement('span');
+                            resultNode.classList.add('pid-wrapper');
+                            resultNode.innerHTML = `<span class="pid-label">Translated PID:</span><span class="pid-number">${resultNumber}</span>`;
+                            element.insertBefore(resultNode, element.firstChild);
+                        }
                     }
                 });
             }
@@ -57,8 +70,14 @@
 
     function runOnURLChange() {
         if (window.location.href.match(/https:\/\/madame\.ynap\.biz\/worklist\/.*/)) {
-            // Run addPidToWorklist function after waiting for the content to load
-            setTimeout(addPidToWorklist, 2000); // Increased timeout for dynamic content
+            // Run addPidToWorklist function only if it isn't already running
+            if (!isRunning) {
+                isRunning = true;
+                setTimeout(() => {
+                    addPidToWorklist();
+                    isRunning = false;  // Reset the flag once done
+                }, 2000); // Increased timeout for dynamic content
+            }
         }
     }
 
