@@ -11,34 +11,28 @@
     let selectedImages = [];
     let selectedVIDs = [];
 
-// Add click listeners to images inside .MuiBox-root that also have the 'css-x6lorw' class
-function addClickListeners() {
-    const imageContainers = document.querySelectorAll('.MuiBox-root img.css-x6lorw');
-    console.log('Found image containers: ', imageContainers.length);
+    function addClickListeners() {
+        const imageContainers = document.querySelectorAll('.MuiBox-root img.css-x6lorw');
+        imageContainers.forEach(image => {
+            if (!image.hasAttribute('data-listener-attached')) {
+                image.addEventListener('click', onImageClick);
+                image.setAttribute('data-listener-attached', 'true');
+            }
+        });
+    }
 
-    imageContainers.forEach(image => {
-        if (!image.hasAttribute('data-listener-attached')) {
-            image.addEventListener('click', onImageClick);
-            image.setAttribute('data-listener-attached', 'true');
-        }
-    });
-}
-
-    // Event handler for clicking an image
     function onImageClick(event) {
         const image = event.target;
         const imgSrc = image.src;
         const vid = extractVIDFromURL(imgSrc);
 
-        // Limit the number of selected VIDs to 5
         if (selectedImages.length >= 5 && !selectedImages.includes(image)) {
-            showLimitAlert(); // Show alert about the selection limit
-            return; // Prevent selecting more than 5 VIDs
+            showLimitAlert();
+            return;
         }
 
         const alreadySelected = selectedImages.includes(image);
         if (alreadySelected) {
-            // Deselect the image
             image.style.border = '';
             image.style.borderRadius = '';
             image.style.position = '';
@@ -46,11 +40,10 @@ function addClickListeners() {
             selectedImages = selectedImages.filter(img => img !== image);
             selectedVIDs = selectedVIDs.filter(id => id !== vid);
         } else {
-            // Select the image
             image.style.border = '5px solid #10f390';
             image.style.borderRadius = '4px';
             image.style.position = 'relative';
-            image.style.zIndex = '10'; // Adjust z-index of selected image
+            image.style.zIndex = '10';
             selectedImages.push(image);
             selectedVIDs.push(vid);
         }
@@ -58,12 +51,10 @@ function addClickListeners() {
         toggleCompareButton();
     }
 
-    // Show a limit alert when more than 5 images are selected
     function showLimitAlert() {
         alert('You can only select up to 5 VIDs at once');
     }
 
-    // Extract VID from image URL
     function extractVIDFromURL(url) {
         const napRegex = /nap\/(\d+)\/1\//;
         const mrpRegex = /mrp\/(\d+)\/1\//;
@@ -80,7 +71,6 @@ function addClickListeners() {
         return null;
     }
 
-    // Add Compare button at the beginning of .MuiGrid-root.MuiGrid-container
     function addCompareButton() {
         const gridContainer = document.querySelector('.MuiGrid-root.MuiGrid-container.css-1w32p15');
         if (gridContainer && !document.getElementById('compareButton')) {
@@ -114,30 +104,26 @@ function addClickListeners() {
 
             compareButton.addEventListener('click', () => {
                 if (selectedVIDs.length === 0) {
-                    showSelectionAlert(); // Show alert when no VIDs are selected
+                    showSelectionAlert();
                 } else if (selectedVIDs.length > 5) {
-                    alert('Please only select 1-5 VIDs'); // Alert for more than 5 VIDs
+                    alert('Please only select 1-5 VIDs');
                 } else {
-                    openComparisonTab(); // Proceed with comparison
+                    openComparisonTab();
                 }
             });
 
-            // Prepend the compare button to the container (move it to the first position)
             gridContainer.prepend(compareButton);
         }
     }
 
-    // Show a selection alert when no VIDs are selected
     function showSelectionAlert() {
         alert('Please Select:\n1 VID for high resolution images\n2-5 VIDs to compare images');
     }
 
-    // Open comparison tab with selected images
     function openComparisonTab() {
         const comparisonTab = window.open('', '_blank');
         comparisonTab.document.title = 'Image Comparison';
 
-        // Set the background color to white
         comparisonTab.document.body.style.backgroundColor = 'white';
 
         const container = comparisonTab.document.createElement('div');
@@ -172,7 +158,6 @@ function addClickListeners() {
         });
     }
 
-    // Check image availability and display images from Net-a-Porter or MrPorter
     function checkAndDisplayImages(vid, locales, column, comparisonTab) {
         let selectedBaseUrl = '';
         const netAPorterUrl = `https://cache.net-a-porter.com/variants/images/${vid}/IN/w2000_a3-4_q80.jpg`;
@@ -197,7 +182,6 @@ function addClickListeners() {
         });
     }
 
-    // Check if image exists at the given URL
     function checkImageAvailability(url) {
         return new Promise(resolve => {
             const img = new Image();
@@ -207,7 +191,6 @@ function addClickListeners() {
         });
     }
 
-    // Load images for different locales
     function loadImagesForLocales(baseUrl, vid, locales, column, comparisonTab) {
         locales.forEach(locale => {
             const imgUrl = `${baseUrl}/variants/images/${vid}/${locale}/w2000_a3-4_q80.jpg`;
@@ -232,7 +215,6 @@ function addClickListeners() {
         });
     }
 
-    // Toggle the Compare button based on the selection
     function toggleCompareButton() {
         const compareButton = document.getElementById('compareButton');
         if (compareButton) {
@@ -248,13 +230,11 @@ function addClickListeners() {
         }
     }
 
-    // Initialize event listeners and button
     setTimeout(() => {
         addClickListeners();
         addCompareButton();
     }, 500);
 
-    // Observe DOM changes and reapply event listeners
     const observer = new MutationObserver(() => {
         addClickListeners();
         addCompareButton();
