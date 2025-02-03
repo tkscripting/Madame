@@ -2,17 +2,15 @@
     'use strict';
 
     let filtersDiv;
-    const localStorageKeyName = 'filterByNameSelection'; // Key to store the selected names in localStorage
-    const localStorageKeyColor = 'filterByColorSelection'; // Key to store the selected colors in localStorage
+    const localStorageKeyName = 'filterByNameSelection';
+    const localStorageKeyColor = 'filterByColorSelection';
 
     function addFiltersDiv() {
         var targetElement = document.querySelector('.MuiBox-root.css-7v0sgd');
         if (targetElement) {
             filtersDiv = document.createElement('div');
             filtersDiv.className = 'Filters';
-
-            // Add the margin-top style here to move the div down
-            filtersDiv.style.marginBottom = '-25px'; // Adjust the value (e.g., '20px') to move it further down
+            filtersDiv.style.marginBottom = '-25px';
 
             var personalButton = document.createElement('button');
             personalButton.innerText = 'Personal';
@@ -36,13 +34,11 @@
             dropdownMenuColor.className = 'dropdown-menu';
             dropdownMenuColor.style.display = 'none';
 
-            // Load selected names and colors from localStorage
             let selectedNames = new Set(JSON.parse(localStorage.getItem(localStorageKeyName)) || []);
             let selectedColors = new Set(JSON.parse(localStorage.getItem(localStorageKeyColor)) || []);
 
             personalButton.addEventListener('click', function() {
                 resetFilters();
-
                 var nameElement = document.querySelector('.MuiTypography-root.MuiTypography-subtitle1.MuiTypography-noWrap.css-aj6ovs');
                 if (nameElement) {
                     var personalName = nameElement.innerText;
@@ -51,12 +47,10 @@
             });
 
             filterByNameButton.addEventListener('click', function() {
-                // Close the color menu if it's open
                 if (dropdownMenuColor.style.display === 'block') {
                     dropdownMenuColor.style.display = 'none';
                 }
 
-                // Toggle the visibility of the name menu
                 dropdownMenuName.style.display = dropdownMenuName.style.display === 'block' ? 'none' : 'block';
                 dropdownMenuName.innerHTML = '';
 
@@ -99,7 +93,7 @@
                             selectedNames.delete(name);
                         }
                         applyFilter();
-                        saveSelectedNames(selectedNames); // Save to localStorage
+                        saveSelectedNames(selectedNames);
                     });
                     label.addEventListener('click', function(event) {
                         event.stopPropagation();
@@ -109,196 +103,170 @@
                     dropdownMenuName.appendChild(listItem);
                 });
 
-                // Apply filter based on selected names
                 applyFilter();
             });
 
-let isColorListPopulated = false; // Flag to track if the color list has been populated
+            let isColorListPopulated = false;
 
-filterByColorButton.addEventListener('click', function() {
-    // Close the name menu if it's open
-    if (dropdownMenuName.style.display === 'block') {
-        dropdownMenuName.style.display = 'none';
-    }
+            filterByColorButton.addEventListener('click', function() {
+                if (dropdownMenuName.style.display === 'block') {
+                    dropdownMenuName.style.display = 'none';
+                }
 
-    // Toggle the visibility of the color menu
-    if (dropdownMenuColor.style.display === 'block') {
-        // Close dropdown if it's already open
-        dropdownMenuColor.style.display = 'none';
-    } else {
-        // Open dropdown if it's closed
-        dropdownMenuColor.style.display = 'block';
-    }
+                if (dropdownMenuColor.style.display === 'block') {
+                    dropdownMenuColor.style.display = 'none';
+                } else {
+                    dropdownMenuColor.style.display = 'block';
+                }
 
-    // If the color list has already been populated, just toggle visibility
-    if (isColorListPopulated) {
-        return; // Don't add colors again
-    }
+                if (isColorListPopulated) {
+                    return;
+                }
 
-    // Populate the color filter dropdown
-    var colors = new Set();
-var colorElements = document.querySelectorAll('.MuiBox-root.css-e8tykc'); // Update selector if necessary
+                var colors = new Set();
+                var colorElements = document.querySelectorAll('.MuiBox-root.css-e8tykc');
 
-colorElements.forEach(function(element) {
-    var firstChild = element.firstElementChild; // Grab the first child element inside the container
-    if (firstChild) {
-        var text = firstChild.innerText.trim(); // Get the text content of the first child element
-        if (text) {
-            colors.add(text); // Add the text (color name) to the set
-        }
-    }
-});
+                colorElements.forEach(function(element) {
+                    var firstChild = element.firstElementChild;
+                    if (firstChild) {
+                        var text = firstChild.innerText.trim();
+                        if (text) {
+                            colors.add(text);
+                        }
+                    }
+                });
 
+                isColorListPopulated = true;
 
-    // Mark the color list as populated to prevent adding colors again
-    isColorListPopulated = true;
+                colors.forEach(function(color) {
+                    var listItem = document.createElement('li');
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = color;
+                    checkbox.checked = selectedColors.has(color);
+                    listItem.style.color = 'black';
+                    listItem.style.fontSize = '0.8rem';
+                    listItem.style.whiteSpace = 'nowrap';
+                    listItem.style.display = 'flex';
+                    listItem.style.alignItems = 'center';
+                    listItem.appendChild(checkbox);
+                    var label = document.createElement('label');
+                    label.appendChild(document.createTextNode(color));
+                    label.style.marginLeft = '10px';
+                    label.style.cursor = 'pointer';
+                    listItem.appendChild(label);
 
-    // Create list items for each color
-    colors.forEach(function(color) {
-        var listItem = document.createElement('li');
-        var checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.value = color;
-        checkbox.checked = selectedColors.has(color); // Check if the color was already selected
-        listItem.style.color = 'black';
-        listItem.style.fontSize = '0.8rem';
-        listItem.style.whiteSpace = 'nowrap';
-        listItem.style.display = 'flex';
-        listItem.style.alignItems = 'center';
-        listItem.appendChild(checkbox);
-        var label = document.createElement('label');
-        label.appendChild(document.createTextNode(color));
-        label.style.marginLeft = '10px';
-        label.style.cursor = 'pointer';
-        listItem.appendChild(label);
+                    checkbox.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                    });
+                    checkbox.addEventListener('change', function() {
+                        if (checkbox.checked) {
+                            selectedColors.add(color);
+                        } else {
+                            selectedColors.delete(color);
+                        }
+                        applyColorFilter();
+                        saveSelectedColors(selectedColors);
+                    });
+                    label.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    });
 
-        // Event listener to handle checkbox changes
-        checkbox.addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
-        checkbox.addEventListener('change', function() {
-            if (checkbox.checked) {
-                selectedColors.add(color);
-            } else {
-                selectedColors.delete(color);
+                    dropdownMenuColor.appendChild(listItem);
+                });
+
+                applyColorFilter();
+            });
+
+            function applyFilter() {
+                var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
+                parentElements.forEach(function(parentElement) {
+                    var iconButtons = parentElement.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6');
+                    var colorElements = parentElement.querySelectorAll('.MuiBox-root.css-e8tykc');
+                    var matchesName = false;
+                    var matchesColor = false;
+
+                    if (selectedNames.size === 0) {
+                        matchesName = true;
+                    } else {
+                        iconButtons.forEach(function(button) {
+                            var ariaLabel = button.getAttribute('aria-label');
+                            if (ariaLabel) {
+                                selectedNames.forEach(function(name) {
+                                    if (ariaLabel.includes(`Author ${name} -`)) {
+                                        matchesName = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
+
+                    if ((matchesName || selectedNames.size === 0) && (matchesColor || selectedColors.size === 0)) {
+                        parentElement.style.display = '';
+                    } else {
+                        parentElement.style.display = 'none';
+                    }
+                });
             }
-            applyColorFilter(); // Apply color filter
-            saveSelectedColors(selectedColors); // Save to localStorage
-        });
-        label.addEventListener('click', function(event) {
-            event.stopPropagation();
-            checkbox.checked = !checkbox.checked;
-            checkbox.dispatchEvent(new Event('change'));
-        });
 
-        // Append the color list item to the dropdown menu
-        dropdownMenuColor.appendChild(listItem);
-    });
+            function applyColorFilter() {
+                var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
+                parentElements.forEach(function(parentElement) {
+                    var colorElements = parentElement.querySelectorAll('.MuiBox-root.css-e8tykc');
+                    var iconButtons = parentElement.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6');
+                    var matchesColor = false;
+                    var matchesName = false;
 
-    // Apply the color filter based on selected colors
-    applyColorFilter();
-});
+                    if (selectedNames.size === 0) {
+                        matchesName = true;
+                    } else {
+                        iconButtons.forEach(function(button) {
+                            var ariaLabel = button.getAttribute('aria-label');
+                            if (ariaLabel) {
+                                selectedNames.forEach(function(name) {
+                                    if (ariaLabel.includes(`Author ${name} -`)) {
+                                        matchesName = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
 
-function applyFilter() {
-    var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
-    parentElements.forEach(function(parentElement) {
-        var iconButtons = parentElement.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6');
-        var colorElements = parentElement.querySelectorAll('.MuiBox-root.css-e8tykc'); // Color elements
-        var matchesName = false;
-        var matchesColor = false;
-
-        // Check if any icon button matches the selected names
-        if (selectedNames.size === 0) {
-            matchesName = true; // If no name is selected, automatically match all elements
-        } else {
-            iconButtons.forEach(function(button) {
-                var ariaLabel = button.getAttribute('aria-label');
-                if (ariaLabel) {
-                    selectedNames.forEach(function(name) {
-                        if (ariaLabel.includes(`Author ${name} -`)) {
-                            matchesName = true;
+                    colorElements.forEach(function(element) {
+                        var text = element.firstElementChild ? element.firstElementChild.innerText.trim() : '';
+                        if (selectedColors.has(text)) {
+                            matchesColor = true;
                         }
                     });
-                }
-            });
-        }
 
-        // Show the element if it matches the selected names or colors
-        if ((matchesName || selectedNames.size === 0) && (matchesColor || selectedColors.size === 0)) {
-            parentElement.style.display = '';
-        } else {
-            parentElement.style.display = 'none';
-        }
-    });
-}
-
-
-function applyColorFilter() {
-    var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
-    parentElements.forEach(function(parentElement) {
-        var colorElements = parentElement.querySelectorAll('.MuiBox-root.css-e8tykc'); // Color elements
-        var iconButtons = parentElement.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6'); // Author buttons
-        var matchesColor = false;
-        var matchesName = false;
-
-        // Check if any icon button matches the selected names
-        if (selectedNames.size === 0) {
-            matchesName = true; // If no name is selected, automatically match all elements
-        } else {
-            iconButtons.forEach(function(button) {
-                var ariaLabel = button.getAttribute('aria-label');
-                if (ariaLabel) {
-                    selectedNames.forEach(function(name) {
-                        if (ariaLabel.includes(`Author ${name} -`)) {
-                            matchesName = true;
-                        }
-                    });
-                }
-            });
-        }
-
-        // Check if any color matches the selected colors
-        colorElements.forEach(function(element) {
-            var text = element.firstElementChild ? element.firstElementChild.innerText.trim() : ''; // Get the color name directly
-
-            if (selectedColors.has(text)) {
-                matchesColor = true;
+                    if ((matchesColor || selectedColors.size === 0) && (matchesName || selectedNames.size === 0)) {
+                        parentElement.style.display = '';
+                    } else {
+                        parentElement.style.display = 'none';
+                    }
+                });
             }
-        });
 
-        // Show the element if it matches the selected colors and names
-        if ((matchesColor || selectedColors.size === 0) && (matchesName || selectedNames.size === 0)) {
-            parentElement.style.display = '';
-        } else {
-            parentElement.style.display = 'none';
-        }
-    });
-}
+            function handleFilterToggle(type, value) {
+                if (type === "name") {
+                    if (selectedNames.has(value)) {
+                        selectedNames.delete(value);
+                    } else {
+                        selectedNames.add(value);
+                    }
+                } else if (type === "color") {
+                    if (selectedColors.has(value)) {
+                        selectedColors.delete(value);
+                    } else {
+                        selectedColors.add(value);
+                    }
+                }
 
-
-
-function handleFilterToggle(type, value) {
-    if (type === "name") {
-        if (selectedNames.has(value)) {
-            selectedNames.delete(value);  // Unselect name
-        } else {
-            selectedNames.add(value);     // Select name
-        }
-    } else if (type === "color") {
-        if (selectedColors.has(value)) {
-            selectedColors.delete(value);  // Unselect color
-        } else {
-            selectedColors.add(value);     // Select color
-        }
-    }
-
-    // After toggling, we apply the correct filters.
-    applyFilter();
-    applyColorFilter();
-}
-
-
-
+                applyFilter();
+                applyColorFilter();
+            }
 
             function applyPersonalFilter(personalName) {
                 var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
@@ -332,23 +300,20 @@ function handleFilterToggle(type, value) {
                 applyColorFilter();
                 dropdownMenuName.style.display = 'none';
                 dropdownMenuColor.style.display = 'none';
-                saveSelectedNames(selectedNames); // Save to localStorage
-                saveSelectedColors(selectedColors); // Save to localStorage
+                saveSelectedNames(selectedNames);
+                saveSelectedColors(selectedColors);
             }
 
             function saveSelectedNames(namesSet) {
-                // Convert the Set to an array and save it to localStorage
                 localStorage.setItem(localStorageKeyName, JSON.stringify(Array.from(namesSet)));
             }
 
             function saveSelectedColors(colorsSet) {
-                // Convert the Set to an array and save it to localStorage
                 localStorage.setItem(localStorageKeyColor, JSON.stringify(Array.from(colorsSet)));
             }
 
             resetButton.addEventListener('click', resetFilters);
 
-            // Styling for the buttons and dropdown
             var buttonStyle = {
                 WebkitFontSmoothing: 'antialiased',
                 textSizeAdjust: '100%',
@@ -443,9 +408,8 @@ function handleFilterToggle(type, value) {
                 }
             });
 
-            // Apply selected filters immediately on page load based on localStorage data
-            applyFilter(); // This will apply the selections loaded from localStorage for name filter
-            applyColorFilter(); // This will apply the selections loaded from localStorage for color filter
+            applyFilter();
+            applyColorFilter();
         }
     }
 
@@ -486,10 +450,8 @@ function handleFilterToggle(type, value) {
         }
     }
 
-    // Initial check
     checkAndRunScript();
 
-    // Monitor URL changes
     onUrlChange(() => {
         checkAndRunScript();
     });
