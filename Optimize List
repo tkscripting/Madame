@@ -24,7 +24,7 @@
 
     setTimeout(() => {
         addIdToMuiBoxElements();
-    }, 500);
+    }, 2000);
 
     // Create the switch element
     function createSwitch() {
