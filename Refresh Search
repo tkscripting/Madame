@@ -6,7 +6,6 @@
     let intervalId;
 
     function simulateInputChange(element, value) {
-        console.log('Simulating input change for element:', element, 'with value:', value);
         const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
         nativeInputValueSetter.call(element, value);
 
@@ -15,12 +14,9 @@
     }
 
     function addButton() {
-        console.log('Attempting to add button...');
         const existingButton = document.querySelector('.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedPrimary.MuiButton-sizeMedium.MuiButton-containedSizeMedium.css-fua1fl');
         if (existingButton) {
-            console.log('Found existing search button:', existingButton);
             if (!document.querySelector('#refreshButton')) {
-                console.log('Refresh button not found, creating and adding one.');
                 const refreshButton = document.createElement('button');
                 refreshButton.innerText = 'Refresh';
                 refreshButton.id = 'refreshButton';
@@ -53,53 +49,37 @@
                 `;
 
                 existingButton.parentNode.insertBefore(refreshButton, existingButton.nextSibling);
-                console.log('Refresh button added successfully.');
 
                 refreshButton.addEventListener('click', function() {
-                    console.log('Refresh button clicked.');
                     const elements = document.querySelectorAll('.css-1nyh8gd');
                     let allStrings = '';
                     elements.forEach((el) => {
                         const firstString = el.textContent.split(' ')[0];
                         allStrings += firstString + ' ';
                     });
-                    console.log('Collected strings:', allStrings.trim());
 
                     const inputElement = document.querySelector('.MuiInputBase-input.MuiInput-input.MuiInputBase-inputMultiline.MuiInputBase-inputAdornedEnd.css-11cus7m');
                     if (inputElement) {
-                        console.log('Input element found:', inputElement);
                         inputElement.focus();
                         simulateInputChange(inputElement, allStrings.trim());
 
                         const searchButton = document.querySelector('.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedPrimary.MuiButton-sizeMedium.MuiButton-containedSizeMedium.css-169cicp');
                         if (searchButton) {
-                            console.log('Search button found:', searchButton);
                             searchButton.click();
                         }
-                    } else {
-                        console.log('Input element not found.');
                     }
                 });
-            } else {
-                console.log('Refresh button already exists.');
             }
-        } else {
-            console.log('Existing search button not found.');
         }
     }
 
     function checkAndAddButton() {
-        console.log('Checking if URL matches and attempting to add button.');
         if (location.href.includes('https://madame.ynap.biz/search')) {
             addButton();
             attemptCount++;
-            console.log(`Attempt ${attemptCount} of ${maxAttempts}`);
             if (attemptCount >= maxAttempts) {
-                console.log('Max attempts reached, stopping interval checks.');
                 clearInterval(intervalId);
             }
-        } else {
-            console.log('URL does not match.');
         }
     }
 
@@ -107,7 +87,6 @@
         window.addEventListener('popstate', checkAndAddButton);
         window.addEventListener('pushstate', checkAndAddButton);
         window.addEventListener('replacestate', checkAndAddButton);
-        console.log('Added URL change detection event listeners.');
 
         (function(history) {
             var pushState = history.pushState;
@@ -127,10 +106,8 @@
                 checkAndAddButton();
             };
         })(window.history);
-        console.log('Overridden history methods for URL change detection.');
 
         const observer = new MutationObserver(() => {
-            console.log('Detected changes with MutationObserver');
             checkAndAddButton();
         });
 
@@ -138,10 +115,8 @@
             childList: true,
             subtree: true
         });
-        console.log('Set up MutationObserver for detecting changes in the DOM.');
     }
 
-    console.log('Initial URL check and button add.');
     if (location.href.includes('https://madame.ynap.biz/search')) {
         checkAndAddButton();
         intervalId = setInterval(checkAndAddButton, 500);
