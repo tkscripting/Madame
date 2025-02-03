@@ -1,0 +1,120 @@
+(function() {
+    'use strict';
+
+    function matchmakerTranslate(singleProduct, matchmakerSearch) {
+        return fetch(`https://matchmaker-api.product.ynapgroup.com/${matchmakerSearch}`, {
+            credentials: 'omit',
+            headers: {
+                accept: 'application/json, text/plain, */*',
+                clientid: 'pidConverter',
+                'content-type': 'application/json;charset=UTF-8',
+            },
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify(singleProduct),
+            method: 'POST',
+            mode: 'cors',
+        })
+        .then(response => response.json())
+        .then(jsonResponse => {
+            let matchedResponses = jsonResponse.matches;
+            if (matchedResponses.length === 0) {
+                alert(`No match found for ${matchmakerSearch}. Please check Matchmaker manually.`);
+                return null;
+            } else {
+                return matchedResponses[0].translatedId;
+            }
+        }).catch(error => {
+            alert("There was an error with the Matchmaker request. Please try again.");
+            return null;
+        });
+    }
+
+    function checkProduct(productString) {
+        if (productString.match(/\d{10,19}/g)) {
+            return [productString.match(/\d{10,19}/g), 'variants'];
+        } else if (productString.match(/\d{6,7}/g)) {
+            return [productString.match(/\d{6,7}/g), 'pids'];
+        } else {
+            return undefined;
+        }
+    }
+
+    function addPidToWorklist() {
+        var elements = document.querySelectorAll('.css-1nyh8gd');
+        elements.forEach(function(element) {
+            var number = element.textContent.trim();
+            var product = checkProduct(number);
+            if (product) {
+                matchmakerTranslate(product[0], product[1]).then(resultNumber => {
+                    if (resultNumber) {
+                        var resultNode = document.createTextNode(resultNumber + ' ');
+                        element.insertBefore(resultNode, element.firstChild);
+                    }
+                });
+            }
+        });
+    }
+
+    function runOnURLChange() {
+        if (window.location.href.match(/https:\/\/madame\.ynap\.biz\/worklist\/.*/)) {
+            setTimeout(addPidToWorklist, 1000);
+        }
+    }
+
+    (function(history) {
+        const pushState = history.pushState;
+        history.pushState = function(state) {
+            if (typeof history.onpushstate == "function") {
+                history.onpushstate({state: state});
+            }
+            setTimeout(runOnURLChange, 1000);
+            return pushState.apply(history, arguments);
+        };
+    })(window.history);
+
+    window.addEventListener('popstate', function() {
+        setTimeout(runOnURLChange, 1500);
+    });
+
+    window.addEventListener('load', function() {
+        setTimeout(runOnURLChange, 1500);
+    });
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .pid-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pid-label {
+            font-family: sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.57;
+            color: rgba(0, 0, 0, 0.87);
+            -webkit-font-smoothing: antialiased;
+            text-size-adjust: 100%;
+            border-radius: 4px;
+            width: 85px;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        .pid-number {
+            font-family: sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.43;
+            color: rgba(0, 0, 0, 0.87);
+            -webkit-font-smoothing: antialiased;
+            text-size-adjust: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    `;
+    document.head.appendChild(style);
+
+})();
