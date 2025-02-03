@@ -57,7 +57,7 @@
 
     function runOnURLChange() {
         if (window.location.href.match(/https:\/\/madame\.ynap\.biz\/worklist\/.*/)) {
-            setTimeout(addPidToWorklist, 1000);
+            addPidToWorklist();
         }
     }
 
@@ -67,17 +67,18 @@
             if (typeof history.onpushstate == "function") {
                 history.onpushstate({state: state});
             }
-            setTimeout(runOnURLChange, 1000);
+            setTimeout(runOnURLChange, 1000); // make sure it runs after a URL change
             return pushState.apply(history, arguments);
         };
     })(window.history);
 
     window.addEventListener('popstate', function() {
-        setTimeout(runOnURLChange, 1500);
+        setTimeout(runOnURLChange, 1500); // handle popstate events too
     });
 
     window.addEventListener('load', function() {
-        setTimeout(runOnURLChange, 1500);
+        // Run immediately on page load (not waiting for any delay)
+        runOnURLChange(); // Trigger on load
     });
 
     const style = document.createElement('style');
