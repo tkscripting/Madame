@@ -1,13 +1,3 @@
-// ==UserScript==
-// @name         Clear Colors
-// @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  Makes the colors on the work list stand out more
-// @author       Tyler
-// @match        https://madame.ynap.biz/worklist/*
-// @grant        none
-// ==/UserScript==
-
 (function() {
     'use strict';
 
