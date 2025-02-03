@@ -2,8 +2,6 @@
     'use strict';
 
     let filtersDiv;
-    const localStorageKeyName = 'filterByNameSelection';
-    const localStorageKeyColor = 'filterByColorSelection';
 
     function addFiltersDiv() {
         var targetElement = document.querySelector('.MuiBox-root.css-7v0sgd');
@@ -34,8 +32,8 @@
             dropdownMenuColor.className = 'dropdown-menu';
             dropdownMenuColor.style.display = 'none';
 
-            let selectedNames = new Set(JSON.parse(localStorage.getItem(localStorageKeyName)) || []);
-            let selectedColors = new Set(JSON.parse(localStorage.getItem(localStorageKeyColor)) || []);
+            let selectedNames = new Set();
+            let selectedColors = new Set();
 
             personalButton.addEventListener('click', function() {
                 resetFilters();
@@ -93,7 +91,6 @@
                             selectedNames.delete(name);
                         }
                         applyFilter();
-                        saveSelectedNames(selectedNames);
                     });
                     label.addEventListener('click', function(event) {
                         event.stopPropagation();
@@ -166,7 +163,6 @@
                             selectedColors.delete(color);
                         }
                         applyColorFilter();
-                        saveSelectedColors(selectedColors);
                     });
                     label.addEventListener('click', function(event) {
                         event.stopPropagation();
@@ -300,16 +296,6 @@
                 applyColorFilter();
                 dropdownMenuName.style.display = 'none';
                 dropdownMenuColor.style.display = 'none';
-                saveSelectedNames(selectedNames);
-                saveSelectedColors(selectedColors);
-            }
-
-            function saveSelectedNames(namesSet) {
-                localStorage.setItem(localStorageKeyName, JSON.stringify(Array.from(namesSet)));
-            }
-
-            function saveSelectedColors(colorsSet) {
-                localStorage.setItem(localStorageKeyColor, JSON.stringify(Array.from(colorsSet)));
             }
 
             resetButton.addEventListener('click', resetFilters);
