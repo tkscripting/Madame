@@ -1,0 +1,496 @@
+(function() {
+    'use strict';
+
+    let filtersDiv;
+    const localStorageKeyName = 'filterByNameSelection'; // Key to store the selected names in localStorage
+    const localStorageKeyColor = 'filterByColorSelection'; // Key to store the selected colors in localStorage
+
+    function addFiltersDiv() {
+        var targetElement = document.querySelector('.MuiBox-root.css-7v0sgd');
+        if (targetElement) {
+            filtersDiv = document.createElement('div');
+            filtersDiv.className = 'Filters';
+
+            // Add the margin-top style here to move the div down
+            filtersDiv.style.marginBottom = '-25px'; // Adjust the value (e.g., '20px') to move it further down
+
+            var personalButton = document.createElement('button');
+            personalButton.innerText = 'Personal';
+
+            var filterByNameButton = document.createElement('button');
+            filterByNameButton.innerText = 'Filter by Name';
+            filterByNameButton.className = 'dropdown-btn';
+
+            var filterByColorButton = document.createElement('button');
+            filterByColorButton.innerText = 'Filter by Color';
+            filterByColorButton.className = 'dropdown-btn';
+
+            var resetButton = document.createElement('button');
+            resetButton.innerText = 'Reset';
+
+            var dropdownMenuName = document.createElement('ul');
+            dropdownMenuName.className = 'dropdown-menu';
+            dropdownMenuName.style.display = 'none';
+
+            var dropdownMenuColor = document.createElement('ul');
+            dropdownMenuColor.className = 'dropdown-menu';
+            dropdownMenuColor.style.display = 'none';
+
+            // Load selected names and colors from localStorage
+            let selectedNames = new Set(JSON.parse(localStorage.getItem(localStorageKeyName)) || []);
+            let selectedColors = new Set(JSON.parse(localStorage.getItem(localStorageKeyColor)) || []);
+
+            personalButton.addEventListener('click', function() {
+                resetFilters();
+
+                var nameElement = document.querySelector('.MuiTypography-root.MuiTypography-subtitle1.MuiTypography-noWrap.css-aj6ovs');
+                if (nameElement) {
+                    var personalName = nameElement.innerText;
+                    applyPersonalFilter(personalName);
+                }
+            });
+
+            filterByNameButton.addEventListener('click', function() {
+                // Close the color menu if it's open
+                if (dropdownMenuColor.style.display === 'block') {
+                    dropdownMenuColor.style.display = 'none';
+                }
+
+                // Toggle the visibility of the name menu
+                dropdownMenuName.style.display = dropdownMenuName.style.display === 'block' ? 'none' : 'block';
+                dropdownMenuName.innerHTML = '';
+
+                var names = new Set();
+                var iconButtons = document.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6');
+                iconButtons.forEach(function(button) {
+                    var ariaLabel = button.getAttribute('aria-label');
+                    if (ariaLabel) {
+                        var authorName = ariaLabel.match(/Author (.*?) -/);
+                        if (authorName && authorName[1]) {
+                            names.add(authorName[1]);
+                        }
+                    }
+                });
+
+                names.forEach(function(name) {
+                    var listItem = document.createElement('li');
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = name;
+                    checkbox.checked = selectedNames.has(name);
+                    listItem.style.color = 'black';
+                    listItem.style.fontSize = '0.8rem';
+                    listItem.style.whiteSpace = 'nowrap';
+                    listItem.style.display = 'flex';
+                    listItem.style.alignItems = 'center';
+                    listItem.appendChild(checkbox);
+                    var label = document.createElement('label');
+                    label.appendChild(document.createTextNode(name));
+                    label.style.marginLeft = '10px';
+                    label.style.cursor = 'pointer';
+                    listItem.appendChild(label);
+                    checkbox.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                    });
+                    checkbox.addEventListener('change', function() {
+                        if (checkbox.checked) {
+                            selectedNames.add(name);
+                        } else {
+                            selectedNames.delete(name);
+                        }
+                        applyFilter();
+                        saveSelectedNames(selectedNames); // Save to localStorage
+                    });
+                    label.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    });
+                    dropdownMenuName.appendChild(listItem);
+                });
+
+                // Apply filter based on selected names
+                applyFilter();
+            });
+
+let isColorListPopulated = false; // Flag to track if the color list has been populated
+
+filterByColorButton.addEventListener('click', function() {
+    // Close the name menu if it's open
+    if (dropdownMenuName.style.display === 'block') {
+        dropdownMenuName.style.display = 'none';
+    }
+
+    // Toggle the visibility of the color menu
+    if (dropdownMenuColor.style.display === 'block') {
+        // Close dropdown if it's already open
+        dropdownMenuColor.style.display = 'none';
+    } else {
+        // Open dropdown if it's closed
+        dropdownMenuColor.style.display = 'block';
+    }
+
+    // If the color list has already been populated, just toggle visibility
+    if (isColorListPopulated) {
+        return; // Don't add colors again
+    }
+
+    // Populate the color filter dropdown
+    var colors = new Set();
+var colorElements = document.querySelectorAll('.MuiBox-root.css-e8tykc'); // Update selector if necessary
+
+colorElements.forEach(function(element) {
+    var firstChild = element.firstElementChild; // Grab the first child element inside the container
+    if (firstChild) {
+        var text = firstChild.innerText.trim(); // Get the text content of the first child element
+        if (text) {
+            colors.add(text); // Add the text (color name) to the set
+        }
+    }
+});
+
+
+    // Mark the color list as populated to prevent adding colors again
+    isColorListPopulated = true;
+
+    // Create list items for each color
+    colors.forEach(function(color) {
+        var listItem = document.createElement('li');
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = color;
+        checkbox.checked = selectedColors.has(color); // Check if the color was already selected
+        listItem.style.color = 'black';
+        listItem.style.fontSize = '0.8rem';
+        listItem.style.whiteSpace = 'nowrap';
+        listItem.style.display = 'flex';
+        listItem.style.alignItems = 'center';
+        listItem.appendChild(checkbox);
+        var label = document.createElement('label');
+        label.appendChild(document.createTextNode(color));
+        label.style.marginLeft = '10px';
+        label.style.cursor = 'pointer';
+        listItem.appendChild(label);
+
+        // Event listener to handle checkbox changes
+        checkbox.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+        checkbox.addEventListener('change', function() {
+            if (checkbox.checked) {
+                selectedColors.add(color);
+            } else {
+                selectedColors.delete(color);
+            }
+            applyColorFilter(); // Apply color filter
+            saveSelectedColors(selectedColors); // Save to localStorage
+        });
+        label.addEventListener('click', function(event) {
+            event.stopPropagation();
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+        });
+
+        // Append the color list item to the dropdown menu
+        dropdownMenuColor.appendChild(listItem);
+    });
+
+    // Apply the color filter based on selected colors
+    applyColorFilter();
+});
+
+function applyFilter() {
+    var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
+    parentElements.forEach(function(parentElement) {
+        var iconButtons = parentElement.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6');
+        var colorElements = parentElement.querySelectorAll('.MuiBox-root.css-e8tykc'); // Color elements
+        var matchesName = false;
+        var matchesColor = false;
+
+        // Check if any icon button matches the selected names
+        if (selectedNames.size === 0) {
+            matchesName = true; // If no name is selected, automatically match all elements
+        } else {
+            iconButtons.forEach(function(button) {
+                var ariaLabel = button.getAttribute('aria-label');
+                if (ariaLabel) {
+                    selectedNames.forEach(function(name) {
+                        if (ariaLabel.includes(`Author ${name} -`)) {
+                            matchesName = true;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Show the element if it matches the selected names or colors
+        if ((matchesName || selectedNames.size === 0) && (matchesColor || selectedColors.size === 0)) {
+            parentElement.style.display = '';
+        } else {
+            parentElement.style.display = 'none';
+        }
+    });
+}
+
+
+function applyColorFilter() {
+    var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
+    parentElements.forEach(function(parentElement) {
+        var colorElements = parentElement.querySelectorAll('.MuiBox-root.css-e8tykc'); // Color elements
+        var iconButtons = parentElement.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6'); // Author buttons
+        var matchesColor = false;
+        var matchesName = false;
+
+        // Check if any icon button matches the selected names
+        if (selectedNames.size === 0) {
+            matchesName = true; // If no name is selected, automatically match all elements
+        } else {
+            iconButtons.forEach(function(button) {
+                var ariaLabel = button.getAttribute('aria-label');
+                if (ariaLabel) {
+                    selectedNames.forEach(function(name) {
+                        if (ariaLabel.includes(`Author ${name} -`)) {
+                            matchesName = true;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Check if any color matches the selected colors
+        colorElements.forEach(function(element) {
+            var text = element.firstElementChild ? element.firstElementChild.innerText.trim() : ''; // Get the color name directly
+
+            if (selectedColors.has(text)) {
+                matchesColor = true;
+            }
+        });
+
+        // Show the element if it matches the selected colors and names
+        if ((matchesColor || selectedColors.size === 0) && (matchesName || selectedNames.size === 0)) {
+            parentElement.style.display = '';
+        } else {
+            parentElement.style.display = 'none';
+        }
+    });
+}
+
+
+
+function handleFilterToggle(type, value) {
+    if (type === "name") {
+        if (selectedNames.has(value)) {
+            selectedNames.delete(value);  // Unselect name
+        } else {
+            selectedNames.add(value);     // Select name
+        }
+    } else if (type === "color") {
+        if (selectedColors.has(value)) {
+            selectedColors.delete(value);  // Unselect color
+        } else {
+            selectedColors.add(value);     // Select color
+        }
+    }
+
+    // After toggling, we apply the correct filters.
+    applyFilter();
+    applyColorFilter();
+}
+
+
+
+
+            function applyPersonalFilter(personalName) {
+                var parentElements = document.querySelectorAll('.MuiBox-root.css-1rdqg8f');
+                parentElements.forEach(function(parentElement) {
+                    var iconButtons = parentElement.querySelectorAll('.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-sizeMedium.css-1n031t6');
+                    var matches = false;
+                    iconButtons.forEach(function(button) {
+                        var ariaLabel = button.getAttribute('aria-label');
+                        if (ariaLabel && ariaLabel.includes(`Author ${personalName} -`)) {
+                            matches = true;
+                        }
+                    });
+                    parentElement.style.display = matches ? '' : 'none';
+                });
+            }
+
+            function resetFilters() {
+                var checkboxesName = dropdownMenuName.querySelectorAll('input[type="checkbox"]');
+                checkboxesName.forEach(function(checkbox) {
+                    checkbox.checked = false;
+                });
+                selectedNames.clear();
+
+                var checkboxesColor = dropdownMenuColor.querySelectorAll('input[type="checkbox"]');
+                checkboxesColor.forEach(function(checkbox) {
+                    checkbox.checked = false;
+                });
+                selectedColors.clear();
+
+                applyFilter();
+                applyColorFilter();
+                dropdownMenuName.style.display = 'none';
+                dropdownMenuColor.style.display = 'none';
+                saveSelectedNames(selectedNames); // Save to localStorage
+                saveSelectedColors(selectedColors); // Save to localStorage
+            }
+
+            function saveSelectedNames(namesSet) {
+                // Convert the Set to an array and save it to localStorage
+                localStorage.setItem(localStorageKeyName, JSON.stringify(Array.from(namesSet)));
+            }
+
+            function saveSelectedColors(colorsSet) {
+                // Convert the Set to an array and save it to localStorage
+                localStorage.setItem(localStorageKeyColor, JSON.stringify(Array.from(colorsSet)));
+            }
+
+            resetButton.addEventListener('click', resetFilters);
+
+            // Styling for the buttons and dropdown
+            var buttonStyle = {
+                WebkitFontSmoothing: 'antialiased',
+                textSizeAdjust: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                boxSizing: 'border-box',
+                WebkitTapHighlightColor: 'transparent',
+                outline: '0',
+                border: '0',
+                margin: '0 5px',
+                cursor: 'pointer',
+                userSelect: 'none',
+                verticalAlign: 'middle',
+                appearance: 'none',
+                textDecoration: 'none',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+                fontWeight: '500',
+                fontSize: '0.875rem',
+                lineHeight: '1.75',
+                textTransform: 'uppercase',
+                minWidth: '64px',
+                padding: '6px 16px',
+                borderRadius: '4px',
+                transition: 'none',
+                color: 'rgb(255, 255, 255)',
+                backgroundColor: 'rgb(33, 33, 33)',
+                boxShadow: 'rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px'
+            };
+
+            var dropdownMenuStyle = {
+                position: 'absolute',
+                top: '100%',
+                left: '0',
+                backgroundColor: 'white',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                listStyle: 'none',
+                padding: '0',
+                margin: '0',
+                zIndex: '9999'
+            };
+
+            var dropdownItemHoverStyle = {
+                backgroundColor: '#f0f0f0'
+            };
+
+            Object.assign(personalButton.style, buttonStyle);
+            Object.assign(filterByNameButton.style, buttonStyle);
+            Object.assign(filterByColorButton.style, buttonStyle);
+            Object.assign(resetButton.style, buttonStyle);
+            Object.assign(dropdownMenuName.style, dropdownMenuStyle);
+            Object.assign(dropdownMenuColor.style, dropdownMenuStyle);
+
+            var style = document.createElement('style');
+            style.innerHTML = `
+                .Filters {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 10px;
+                }
+                .Filters button {
+                    display: block;
+                    margin: auto;
+                }
+                .dropdown-menu li {
+                    padding: 10px;
+                    color: black;
+                    font-size: 0.8rem;
+                }
+                .dropdown-menu li:hover {
+                    background-color: ${dropdownItemHoverStyle.backgroundColor};
+                }
+            `;
+            document.head.appendChild(style);
+
+            filterByNameButton.appendChild(dropdownMenuName);
+            filterByColorButton.appendChild(dropdownMenuColor);
+
+            filtersDiv.appendChild(personalButton);
+            filtersDiv.appendChild(filterByNameButton);
+            filtersDiv.appendChild(filterByColorButton);
+            filtersDiv.appendChild(resetButton);
+
+            targetElement.parentNode.insertBefore(filtersDiv, targetElement.nextSibling);
+
+            document.addEventListener('click', function(event) {
+                if (!filtersDiv.contains(event.target)) {
+                    dropdownMenuName.style.display = 'none';
+                    dropdownMenuColor.style.display = 'none';
+                }
+            });
+
+            // Apply selected filters immediately on page load based on localStorage data
+            applyFilter(); // This will apply the selections loaded from localStorage for name filter
+            applyColorFilter(); // This will apply the selections loaded from localStorage for color filter
+        }
+    }
+
+    function removeFiltersDiv() {
+        if (filtersDiv && filtersDiv.parentNode) {
+            filtersDiv.parentNode.removeChild(filtersDiv);
+            filtersDiv = null;
+        }
+    }
+
+    function waitForElement(selector, callback) {
+        var element = document.querySelector(selector);
+        if (element) {
+            callback(element);
+        } else {
+            setTimeout(function() {
+                waitForElement(selector, callback);
+            }, 500);
+        }
+    }
+
+    function onUrlChange(callback) {
+        let lastUrl = location.href;
+        new MutationObserver(() => {
+            const currentUrl = location.href;
+            if (currentUrl !== lastUrl) {
+                lastUrl = currentUrl;
+                callback();
+            }
+        }).observe(document, { subtree: true, childList: true });
+    }
+
+    function checkAndRunScript() {
+        if (location.href.startsWith('https://madame.ynap.biz/worklist/')) {
+            waitForElement('.MuiBox-root.css-7v0sgd', addFiltersDiv);
+        } else {
+            removeFiltersDiv();
+        }
+    }
+
+    // Initial check
+    checkAndRunScript();
+
+    // Monitor URL changes
+    onUrlChange(() => {
+        checkAndRunScript();
+    });
+})();
