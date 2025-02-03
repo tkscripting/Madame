@@ -61,6 +61,16 @@
         }
     }
 
+    // Call `runOnURLChange` both on page load and on history changes
+    window.addEventListener('popstate', function() {
+        setTimeout(runOnURLChange, 1500);
+    });
+
+    window.addEventListener('load', function() {
+        setTimeout(runOnURLChange, 1500); // Run when the page is first loaded or refreshed
+    });
+
+    // Ensure to call runOnURLChange immediately after a URL change (via pushState)
     (function(history) {
         const pushState = history.pushState;
         history.pushState = function(state) {
@@ -71,14 +81,6 @@
             return pushState.apply(history, arguments);
         };
     })(window.history);
-
-    window.addEventListener('popstate', function() {
-        setTimeout(runOnURLChange, 1500);
-    });
-
-    window.addEventListener('load', function() {
-        setTimeout(runOnURLChange, 1500);
-    });
 
     const style = document.createElement('style');
     style.innerHTML = `
@@ -116,5 +118,4 @@
         }
     `;
     document.head.appendChild(style);
-
 })();
