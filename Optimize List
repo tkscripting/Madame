@@ -339,6 +339,4 @@
 
     appendSwitchAndTextToTarget();
 
-    document.addEventListener('click', handleImageClick);
-
 })();
