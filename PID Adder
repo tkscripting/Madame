@@ -57,11 +57,15 @@
 
     function runOnURLChange() {
         if (window.location.href.match(/https:\/\/madame\.ynap\.biz\/worklist\/.*/)) {
-            setTimeout(addPidToWorklist, 1000);
+            // Run addPidToWorklist function after waiting for the content to load
+            setTimeout(addPidToWorklist, 2000); // Increased timeout for dynamic content
         }
     }
 
-    // Call `runOnURLChange` both on page load and on history changes
+    // Watch for changes in the DOM (useful for dynamically loaded content)
+    const observer = new MutationObserver(runOnURLChange);
+    observer.observe(document.body, { childList: true, subtree: true });
+
     window.addEventListener('popstate', function() {
         setTimeout(runOnURLChange, 1500);
     });
