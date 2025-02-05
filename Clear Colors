@@ -56,6 +56,10 @@
                 element.style.backgroundColor = '#4B2C20';
                 Object.assign(element.style, commonStyles);
             }
+            else if (text === "Mushroom") {
+                element.style.backgroundColor = '#d8ccc0';
+                Object.assign(element.style, commonStyles);
+            }
             else if (text === "Taupe") {
                 element.style.backgroundColor = '#ab8f76';
                 Object.assign(element.style, commonStyles);
