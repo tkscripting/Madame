@@ -64,8 +64,40 @@
                 element.style.backgroundColor = '#ab8f76';
                 Object.assign(element.style, commonStyles);
             }
+            else if (text === "Sand") {
+                element.style.backgroundColor = '#FF5733';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Light brown") {
+                element.style.backgroundColor = '#FF5733';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Mid denim") {
+                element.style.backgroundColor = '#4A6D8C';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Claret") {
+                element.style.backgroundColor = '#9E1B32';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Light green") {
+                element.style.backgroundColor = '#90EE90';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Leaf green") {
+                element.style.backgroundColor = '#4C9A2A';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Anthracite") {
+                element.style.backgroundColor = '#303B44';
+                Object.assign(element.style, commonStyles);
+            }
             else if (text === "Cream") {
                 element.style.backgroundColor = '#d9d7b6';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Charcoal") {
+                element.style.backgroundColor = '#36454F';
                 Object.assign(element.style, commonStyles);
             }
             else if (text === "Camel") {
