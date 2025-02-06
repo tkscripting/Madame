@@ -1,12 +1,26 @@
 (function() {
     'use strict';
 
+    // Function to select and check all checkboxes
+    function selectAndCheckAllCheckboxesConfirmAll() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                checkbox.click(); // Check the checkbox if not already checked
+            }
+        });
+    }
+
+    // Function to add "Templater" button if it doesn't exist
     function addButtonsIfNeeded() {
         const box = document.querySelector('.MuiBox-root.css-snppej');
         if (box && !document.querySelector('.custom-button')) {
+            // Create the "Templater" button
             const templaterButton = document.createElement('button');
             templaterButton.textContent = 'Templater';
             templaterButton.classList.add('custom-button');
+
+            // Apply styles (same as original code)
             templaterButton.style.padding = '6px 16px';
             templaterButton.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
             templaterButton.style.fontWeight = '500';
@@ -22,13 +36,19 @@
             templaterButton.style.height = '29px';
             templaterButton.style.minWidth = '64px';
             templaterButton.style.transition = 'background-color 0.3s ease';
+
+            // Center the text
             templaterButton.style.display = 'inline-flex';
             templaterButton.style.alignItems = 'center';
             templaterButton.style.justifyContent = 'center';
             templaterButton.style.textAlign = 'center';
+
             templaterButton.style.marginRight = '16px';
+
+            // Insert the "Templater" button
             box.insertBefore(templaterButton, box.firstChild);
 
+            // Add event listener to run Templater script
             templaterButton.addEventListener('click', function() {
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
@@ -38,15 +58,20 @@
         }
     }
 
+    // Function to click the "Shoot Only" button
     function clickShootOnlyButton() {
         const shootOnlyButton = Array.from(document.querySelectorAll('.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary.MuiButton-sizeSmall.MuiButton-textSizeSmall.MuiButton-colorPrimary.css-rsh3zc'))
             .find(button => button.textContent.trim() === "Shoot Only");
 
         if (shootOnlyButton) {
+            console.log('Found "Shoot Only" button, clicking...');
             shootOnlyButton.click();
+        } else {
+            console.warn('No "Shoot Only" button found!');
         }
     }
 
+    // Function to click the "Assign selected" button
     function clickAssignSelectedButton() {
         const assignButton = Array.from(document.querySelectorAll('.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary.MuiButton-sizeSmall.MuiButton-textSizeSmall.MuiButton-colorPrimary.css-1i1a21c'))
             .find(button => button.textContent.trim() === "Assign selected");
@@ -56,6 +81,7 @@
         }
     }
 
+    // Function to click the specific button after Confirm All action
     function clickConfirmButtonAfterCheckboxes() {
         const confirmButton = document.querySelector('.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedPrimary.MuiButton-sizeSmall.MuiButton-containedSizeSmall.MuiButton-colorPrimary.css-nlb5uj');
 
@@ -65,17 +91,20 @@
     }
 
     function addButtonInsideMuiBox() {
+        // Select the .MuiBox-root.css-mlggcq element
         const parentElement = document.querySelector('.MuiBox-root.css-mlggcq');
 
         if (parentElement) {
+            // Find the .MuiBox-root.css-ni3ac element inside it
             const element = parentElement.querySelector('.MuiBox-root.css-ni3ac');
 
             if (element) {
+                // Only add the button if it doesn't already exist
                 if (!element.querySelector('.tampermonkey-btn')) {
                     const button = document.createElement('button');
                     button.textContent = 'Confirm All';
                     button.classList.add('tampermonkey-btn');
-                    button.style.padding = '6px 16px';
+                    button.style.padding = '6px 16px';  // Match the padding style of other buttons
                     button.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
                     button.style.fontWeight = '500';
                     button.style.fontSize = '0.875rem';
@@ -84,31 +113,35 @@
                     button.style.borderRadius = '4px';
                     button.style.border = 'none';
                     button.style.cursor = 'pointer';
-                    button.style.backgroundColor = '#007bff';
+                    button.style.backgroundColor = '#007bff';  // Same as "Assign All"
                     button.style.color = '#fff';
                     button.style.boxShadow = 'none';
                     button.style.height = '29px';
-                    button.style.minWidth = '120px';
+                    button.style.minWidth = '120px';  // Same as "Assign All"
                     button.style.whiteSpace = 'nowrap';
                     button.style.textOverflow = 'ellipsis';
                     button.style.overflow = 'hidden';
                     button.style.width = 'auto';
+
                     button.style.display = 'inline-flex';
                     button.style.alignItems = 'center';
                     button.style.justifyContent = 'center';
                     button.style.textAlign = 'center';
 
+                    // Add event listener for the "Confirm All" button to check all boxes and click the next button
                     button.addEventListener('click', () => {
                         selectAndCheckAllCheckboxesConfirmAll();
                         clickConfirmButtonAfterCheckboxes();
                     });
 
+                    // Append the button inside the .MuiBox-root.css-ni3ac element
                     element.appendChild(button);
                 }
             }
         }
     }
 
+    // Set up a MutationObserver to detect when the button container is available
     const observer = new MutationObserver(() => {
         addButtonsIfNeeded();
         addButtonInsideMuiBox();
@@ -116,24 +149,30 @@
 
     observer.observe(document.body, { childList: true, subtree: true });
 
+    // Initial setup check
     addButtonsIfNeeded();
     addButtonInsideMuiBox();
 
-    let lastTabIndex = 0;
+    // Function to cycle through the MuiTabs buttons continuously on Tab key press
+    let lastTabIndex = 0; // Track the last clicked tab index
     function cycleThroughTabs(event) {
         if (event.key === 'Tab') {
             const tabButtons = document.querySelectorAll('.MuiTabs-flexContainer.css-k008qs button');
 
+            // If there are no buttons to cycle, do nothing
             if (tabButtons.length === 0) return;
 
+            // Calculate the next button index (circularly)
             lastTabIndex = (lastTabIndex + 1) % tabButtons.length;
 
+            // Click the next button
             tabButtons[lastTabIndex].click();
 
-            event.preventDefault();
+            event.preventDefault();  // Prevent default tab behavior
         }
     }
 
+    // Add the keydown listener for Tab key
     window.addEventListener('keydown', cycleThroughTabs);
 
 })();
