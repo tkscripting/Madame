@@ -1,9 +1,23 @@
+// ==UserScript==
+// @name         Optimize List
+// @namespace    http://tampermonkey.net/
+// @version      1.7
+// @description  Optimizing spacing and layout of the worklist
+// @match        https://madame.ynap.biz/*
+// @grant        none
+// ==/UserScript==
+
 (function() {
     'use strict';
 
     let isSwitchOn = false; // Flag to check if the switch is on
 
-       // Change text content based on conditions
+    // Check if the current URL matches the desired pattern
+    function isValidUrl() {
+        return window.location.href.startsWith('https://madame.ynap.biz/worklist/');
+    }
+
+    // Change text content based on conditions
     function changeTextContent() {
         const allChildElements = document.querySelectorAll('.MuiBox-root.css-hfakad');
 
@@ -57,37 +71,21 @@
         });
     }
 
-// Function to change the color of all matching paths to magenta
-function changePathColor() {
-    // Select all paths with the specific 'd' attribute
-    const paths = document.querySelectorAll('path[d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2"]');
+    // Function to change the color of all matching paths to magenta
+    function changePathColor() {
+        const paths = document.querySelectorAll('path[d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2"]');
 
-    // Iterate through all selected paths and apply magenta color
-    paths.forEach(path => {
-        path.setAttribute('fill', 'rgb(243, 114, 16)');
-    });
-}
-
-function removeMuiBoxClass() {
-    const elements = document.querySelectorAll('.MuiBox-root.css-14s4iyf');
-    elements.forEach(element => {
-        element.remove();  // Removes the element from the DOM
-    });
-}
-
-const observer = new MutationObserver((mutationsList, observer) => {
-    changeTextContent();
-    changePathColor();
-    appendSwitchAndTextToTarget();
-    limitWidthToViewport();
-    removeMuiBoxClass();
-
-    if (document.querySelector('.MuiGrid-root.MuiGrid-item.css-bl06vm')) {
-        observer.disconnect();
+        paths.forEach(path => {
+            path.setAttribute('fill', 'rgb(243, 114, 16)');
+        });
     }
-});
 
-
+    function removeMuiBoxClass() {
+        const elements = document.querySelectorAll('.MuiBox-root.css-14s4iyf');
+        elements.forEach(element => {
+            element.remove();
+        });
+    }
 
     // Add ID to MuiBox elements
     function addIdToMuiBoxElements() {
@@ -201,7 +199,10 @@ const observer = new MutationObserver((mutationsList, observer) => {
         const targetElementSelector = '.MuiGrid-root.MuiGrid-item.css-bl06vm';
         const targetElement = document.querySelector(targetElementSelector);
 
-        if (targetElement) {
+        // Prevent adding the switch if already present
+        if (document.querySelector('.optimize-switch')) return;
+
+        if (targetElement && isValidUrl()) {
             const switchElement = createSwitch();
             const textElement = createText();
 
@@ -211,6 +212,7 @@ const observer = new MutationObserver((mutationsList, observer) => {
             container.style.justifyContent = 'flex-start';  // Keep them aligned to the left
             container.style.width = 'auto';                  // Let the width auto-adjust based on content
             container.style.flexShrink = '0';                // Prevent shrinking
+            container.classList.add('optimize-switch');      // Add class to avoid duplicates
 
             container.appendChild(switchElement);
             container.appendChild(textElement);
@@ -222,6 +224,7 @@ const observer = new MutationObserver((mutationsList, observer) => {
             console.log('Switch and "Optimize List" added after the target element.');
         } else {
             console.log('Target element not found, retrying...');
+            setTimeout(appendSwitchAndTextToTarget, 1000); // Retry after 1 second
         }
     }
 
@@ -243,87 +246,62 @@ const observer = new MutationObserver((mutationsList, observer) => {
             const hasImage = parentContainer.querySelector('img') !== null;
             const boxZero = parentContainer.closest('.MuiBox-root.css-0');
 
-            if (!hasImage && boxZero) {
-                boxZero.style.display = 'none';
-            } else if (boxZero) {
+            if (boxZero) {
+                boxZero.style.display = hasImage ? '' : 'none';
+            }
+
+            const childElements = parentContainer.querySelectorAll('.MuiBox-root.css-hfakad');
+            childElements.forEach(element => {
+                const textContainer = element.querySelector('.MuiBox-root.css-b6m7zh');
+                if (textContainer) {
+                    const text = textContainer.textContent.trim();
+                    if (!hasImage && text !== '') {
+                        element.style.display = 'none';
+                    } else {
+                        element.style.display = '';
+                    }
+                }
+            });
+        });
+    }
+
+    // Function to show all elements without images
+    function showElementsWithoutImages() {
+        const parentContainers = document.querySelectorAll('.MuiBox-root.css-caosg6');
+        parentContainers.forEach(parentContainer => {
+            const boxZero = parentContainer.closest('.MuiBox-root.css-0');
+            if (boxZero) {
                 boxZero.style.display = '';
             }
 
             const childElements = parentContainer.querySelectorAll('.MuiBox-root.css-hfakad');
             childElements.forEach(element => {
-                const hasImageInChild = element.querySelector('img') !== null;
-                if (!hasImageInChild) {
-                    element.style.display = 'none';
-                }
+                element.style.display = '';
             });
-        });
-
-        // New logic to hide .MuiBox-root.css-0 inside .MuiBox-root.css-gg4vpm
-        const gg4vpmContainers = document.querySelectorAll('.MuiBox-root.css-gg4vpm');
-        gg4vpmContainers.forEach(container => {
-            const childBoxZeroElements = container.querySelectorAll('.MuiBox-root.css-0');
-            childBoxZeroElements.forEach(child => {
-                child.style.display = 'none'; // Hide the child element
-            });
-        });
-
-        // Handling for .MuiBox-root.css-hboir5 and .MuiBox-root.css-0 visibility based on switch
-        const hboir5Containers = document.querySelectorAll('.MuiBox-root.css-hboir5');
-        hboir5Containers.forEach(container => {
-            const boxZeroInside = container.querySelectorAll('.MuiBox-root.css-0');
-            boxZeroInside.forEach(boxZero => {
-                boxZero.style.display = 'none'; // Initially hide these elements
-            });
-        });
-
-        const box178ykluElements = document.querySelectorAll('.MuiBox-root.css-178yklu');
-        box178ykluElements.forEach(element => {
-            const parentContainer = element.parentElement;
-            const parentWidth = parentContainer.offsetWidth;
-            element.style.position = 'relative'; // Set relative positioning (or absolute if needed)
-            element.style.left = '20%'; // Move the element 50% to the right
-            element.style.width = '60%';
         });
     }
 
-// Function to show elements without images (including .MuiBox-root.css-0 inside .MuiBox-root.css-hboir5)
-function showElementsWithoutImages() {
-    const parentContainers = document.querySelectorAll('.MuiBox-root.css-caosg6');
-    parentContainers.forEach(parentContainer => {
-        const childElements = parentContainer.querySelectorAll('.MuiBox-root.css-hfakad');
-        childElements.forEach(element => {
-            element.style.display = '';  // Reset display to show all child elements
-        });
-    });
+    // Observe URL changes and re-run the function
+    function observeUrlChanges() {
+        let currentUrl = window.location.href;
 
-    const box178ykluElements = document.querySelectorAll('.MuiBox-root.css-178yklu');
-    box178ykluElements.forEach(element => {
-        element.style.width = '100%'; // Reset width to 100% of its container
-        element.style.left = '';
-        element.style.position = ''; // Set relative positioning (or absolute if needed)
+        setInterval(() => {
+            if (window.location.href !== currentUrl) {
+                currentUrl = window.location.href;
+                console.log('URL changed, checking for target element...');
+                if (isValidUrl()) {
+                    appendSwitchAndTextToTarget();
+                }
+            }
+        }, 1000); // Check every second
+    }
 
-    });
+    // Call the function to start observing the URL changes
+    observeUrlChanges();
 
-    // Show .MuiBox-root.css-0 inside .MuiBox-root.css-hboir5 when the switch is turned off
-    const hboir5Containers = document.querySelectorAll('.MuiBox-root.css-hboir5');
-    hboir5Containers.forEach(container => {
-        const boxZeroInside = container.querySelectorAll('.MuiBox-root.css-0');
-        boxZeroInside.forEach(boxZero => {
-            boxZero.style.display = ''; // Revert to normal display (make it visible)
-        });
-    });
-
-    // New logic: Show elements with ID 'VID' inside .MuiBox-root.css-0
-    const boxZeroWithVid = document.querySelectorAll('.MuiBox-root.css-0#VID');
-    boxZeroWithVid.forEach(element => {
-        element.style.display = '';  // Reset display to show the element with ID 'VID'
-    });
-}
-
-
- 
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    appendSwitchAndTextToTarget();
-
+    // Initial run of the function when the page loads
+    if (isValidUrl()) {
+        appendSwitchAndTextToTarget();
+        limitWidthToViewport();
+    }
 })();
