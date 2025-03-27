@@ -3,6 +3,92 @@
 
     let isSwitchOn = false; // Flag to check if the switch is on
 
+       // Change text content based on conditions
+    function changeTextContent() {
+        const allChildElements = document.querySelectorAll('.MuiBox-root.css-hfakad');
+
+        allChildElements.forEach(element => {
+            const textContainer = element.querySelector('.MuiBox-root.css-b6m7zh');
+            if (textContainer) {
+                const text = textContainer.textContent.trim();
+
+                switch (text) {
+                    case "Front Still Life":
+                        textContainer.textContent = "Index";
+                        break;
+                    case "Outfit 1":
+                        textContainer.textContent = "OU";
+                        break;
+                    case "Front Model":
+                        textContainer.textContent = "FR";
+                        break;
+                    case "Back Model":
+                        textContainer.textContent = "BK";
+                        break;
+                    case "Back Still Life":
+                        textContainer.textContent = "BK";
+                        break;
+                    case "Outfit 2":
+                        textContainer.textContent = "OU 2";
+                        break;
+                    case "Detail 1":
+                        textContainer.textContent = "CU";
+                        break;
+                    case "Side Still Life":
+                        textContainer.textContent = "E1";
+                        break;
+                    case "Detail 2":
+                        textContainer.textContent = "E1";
+                        break;
+                    case "Detail 3":
+                        textContainer.textContent = "E2";
+                        break;
+                    case "Detail 4":
+                        textContainer.textContent = "E3";
+                        break;
+                    case "Extra 1":
+                        textContainer.textContent = "E4";
+                        break;
+                    case "Extra 2":
+                        textContainer.textContent = "E5";
+                        break;
+                }
+            }
+        });
+    }
+
+// Function to change the color of all matching paths to magenta
+function changePathColor() {
+    // Select all paths with the specific 'd' attribute
+    const paths = document.querySelectorAll('path[d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2"]');
+
+    // Iterate through all selected paths and apply magenta color
+    paths.forEach(path => {
+        path.setAttribute('fill', 'rgb(243, 114, 16)');
+    });
+}
+
+function removeMuiBoxClass() {
+    const elements = document.querySelectorAll('.MuiBox-root.css-14s4iyf');
+    elements.forEach(element => {
+        element.remove();  // Removes the element from the DOM
+    });
+}
+
+const observer = new MutationObserver((mutationsList, observer) => {
+    changeTextContent();
+    changePathColor();
+    appendSwitchAndTextToTarget();
+    limitWidthToViewport();
+    removeMuiBoxClass();
+
+    if (document.querySelector('.MuiGrid-root.MuiGrid-item.css-bl06vm')) {
+        observer.disconnect();
+    }
+});
+
+
+
     // Add ID to MuiBox elements
     function addIdToMuiBoxElements() {
         const parentElement = document.querySelector('.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation2.css-1m9yl2a');
@@ -68,16 +154,12 @@
             switchLabel.style.backgroundColor = '#4cd964';
             switchCircle.style.transform = 'translateX(26px)';
             hideElementsWithoutImages();
-            changeTextContent();
-            changePathColor();  // Change path color to magenta
             isSwitchOn = true;
         } else {
             switchInput.checked = false;
             switchLabel.style.backgroundColor = '#ccc';
             switchCircle.style.transform = 'translateX(0)';
             showElementsWithoutImages();
-            resetTextContent();
-            resetPathColor();  // Reset path color
             isSwitchOn = false;
         }
 
@@ -87,16 +169,12 @@
                 switchLabel.style.backgroundColor = '#4cd964';
                 switchCircle.style.transform = 'translateX(26px)';
                 hideElementsWithoutImages();
-                changeTextContent();
-                changePathColor();  // Change path color to magenta when the switch is on
                 localStorage.setItem('switchState', 'on');
                 isSwitchOn = true;
             } else {
                 switchLabel.style.backgroundColor = '#ccc';
                 switchCircle.style.transform = 'translateX(0)';
                 showElementsWithoutImages();
-                resetTextContent();
-                resetPathColor();  // Reset path color when the switch is off
                 localStorage.setItem('switchState', 'off');
                 isSwitchOn = false;
             }
@@ -243,138 +321,7 @@ function showElementsWithoutImages() {
 }
 
 
-    // Change text content based on conditions
-    function changeTextContent() {
-        const allChildElements = document.querySelectorAll('.MuiBox-root.css-hfakad');
-
-        allChildElements.forEach(element => {
-            const textContainer = element.querySelector('.MuiBox-root.css-b6m7zh');
-            if (textContainer) {
-                const text = textContainer.textContent.trim();
-
-                switch (text) {
-                    case "Front Still Life":
-                        textContainer.textContent = "Index";
-                        break;
-                    case "Outfit 1":
-                        textContainer.textContent = "OU";
-                        break;
-                    case "Front Model":
-                        textContainer.textContent = "FR";
-                        break;
-                    case "Back Model":
-                        textContainer.textContent = "BK";
-                        break;
-                    case "Back Still Life":
-                        textContainer.textContent = "BK";
-                        break;
-                    case "Outfit 2":
-                        textContainer.textContent = "OU 2";
-                        break;
-                    case "Detail 1":
-                        textContainer.textContent = "CU";
-                        break;
-                    case "Side Still Life":
-                        textContainer.textContent = "E1";
-                        break;
-                    case "Detail 2":
-                        textContainer.textContent = "E2";
-                        break;
-                    case "Detail 3":
-                        textContainer.textContent = "E3";
-                        break;
-                    case "Extra 1":
-                        textContainer.textContent = "E4";
-                        break;
-                    case "Extra 2":
-                        textContainer.textContent = "E5";
-                        break;
-                }
-            }
-        });
-    }
-
-    // Reset text content
-    function resetTextContent() {
-        const allChildElements = document.querySelectorAll('.MuiBox-root.css-hfakad');
-
-        allChildElements.forEach(element => {
-            const textContainer = element.querySelector('.MuiBox-root.css-b6m7zh');
-            if (textContainer) {
-                const text = textContainer.textContent.trim();
-
-                switch (text) {
-                    case "Index":
-                        textContainer.textContent = "Front Still Life";
-                        break;
-                    case "OU":
-                        textContainer.textContent = "Outfit 1";
-                        break;
-                    case "FR":
-                        textContainer.textContent = "Front Model";
-                        break;
-                    case "BK":
-                        textContainer.textContent = "Back Model";
-                        break;
-                    case "OU 2":
-                        textContainer.textContent = "Outfit 2";
-                        break;
-                    case "CU":
-                        textContainer.textContent = "Detail 1";
-                        break;
-                    case "E1":
-                        textContainer.textContent = "Side Still Life";
-                        break;
-                    case "E2":
-                        textContainer.textContent = "Detail 2";
-                        break;
-                    case "E3":
-                        textContainer.textContent = "Detail 3";
-                        break;
-                    case "E4":
-                        textContainer.textContent = "Extra 1";
-                        break;
-                    case "E5":
-                        textContainer.textContent = "Extra 2";
-                        break;
-                }
-            }
-        });
-    }
-
-// Function to change the color of all matching paths to magenta
-function changePathColor() {
-    // Select all paths with the specific 'd' attribute
-    const paths = document.querySelectorAll('path[d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2"]');
-
-    // Iterate through all selected paths and apply magenta color
-    paths.forEach(path => {
-        path.setAttribute('fill', 'rgb(243, 114, 16)');
-    });
-}
-
-
-// Function to reset the path color for all matching paths
-function resetPathColor() {
-    // Select all paths with the specific 'd' attribute
-    const paths = document.querySelectorAll('path[d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2"]');
-
-    // Iterate through all selected paths and reset the color
-    paths.forEach(path => {
-        path.setAttribute('fill', '');  // Reset to original color
-    });
-}
-
-    // Mutation Observer for dynamically added elements
-    const observer = new MutationObserver((mutationsList, observer) => {
-        appendSwitchAndTextToTarget();
-        limitWidthToViewport();  // Apply width limitation to .MuiBox-root.css-o744zt
-
-        if (document.querySelector('.MuiGrid-root.MuiGrid-item.css-bl06vm')) {
-            observer.disconnect();
-        }
-    });
-
+ 
     observer.observe(document.body, { childList: true, subtree: true });
 
     appendSwitchAndTextToTarget();
