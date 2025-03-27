@@ -1,3 +1,13 @@
+// ==UserScript==
+// @name         Runway Check
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Adds clear text if a Runway image might be available
+// @author       Tyler
+// @match        https://madame.ynap.biz/*
+// @grant        none
+// ==/UserScript==
+
 (function() {
     'use strict';
 
@@ -6,25 +16,19 @@
 
     // Function to check and add the <p> element
     function checkForRunway() {
-        console.log("Checking for elements...");
-
         // Get all elements with the class "MuiTypography-root MuiTypography-body2 css-1vrac05" for <p>
         const paragraphs = document.querySelectorAll('.MuiTypography-root.MuiTypography-body2.css-1vrac05');
-        console.log("Found paragraphs:", paragraphs.length); // Log the number of paragraphs found
 
         let matched = false; // Flag to check if we found any matches
 
         paragraphs.forEach(paragraph => {
             const text = paragraph.textContent.trim();
-            console.log("Paragraph text:", text); // Log the text of each paragraph
 
             // Check if the text contains "RUNWAY" or "LOOK" (case-insensitive)
             if ((text.toUpperCase().includes("RUNWAY") || text.toUpperCase().includes("LOOK"))) {
-                console.log("Matching text found:", text); // Log if a match is found
 
                 // Check if the message has already been added to avoid duplicates
                 if (!paragraph.parentElement.querySelector('.runway-check-message')) {
-                    console.log("Appending new message...");
 
                     // Create a new <p> element with bold red text
                     const newElement = document.createElement('p');
@@ -38,9 +42,6 @@
 
                     // Insert the new <p> after the current <p>
                     paragraph.parentNode.insertBefore(newElement, paragraph.nextSibling);
-                    console.log("Message appended after paragraph.");
-                } else {
-                    console.log("Message already added. Skipping...");
                 }
 
                 matched = true; // Set flag to true if we found at least one match
@@ -50,19 +51,12 @@
         // If matches are found, stop the observer
         if (matched && !matchesFound) {
             matchesFound = true; // Set the flag to indicate that matches are found
-            console.log("Matches found, disconnecting observer...");
             observer.disconnect(); // Stop the observer once matches are found
-        }
-
-        // If no matches were found and the script is still running, keep observing
-        if (!matched && !matchesFound) {
-            console.log("No matches found, continuing to observe...");
         }
     }
 
     // Mutation observer to monitor changes in the DOM and run checkForRunway when necessary
     const observer = new MutationObserver(() => {
-        console.log("DOM mutated, checking for runway...");
         checkForRunway(); // Run the function to check for matches
     });
 
@@ -71,8 +65,8 @@
 
     // Run initial check on page load
     window.addEventListener('load', () => {
-        console.log("Page loaded, starting initial check...");
         checkForRunway();
     });
 
 })();
+
