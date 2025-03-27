@@ -108,6 +108,26 @@
                 element.style.backgroundColor = '#c9c8c7';
                 Object.assign(element.style, commonStyles);
             }
+            else if (text === "Dark green") {
+                element.style.backgroundColor = '#06402B';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Burgundy") {
+                element.style.backgroundColor = '#660033';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Light blue") {
+                element.style.backgroundColor = '#90D5FF';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Blush") {
+                element.style.backgroundColor = '#DE5D83';
+                Object.assign(element.style, commonStyles);
+            }
+            else if (text === "Lilac") {
+                element.style.backgroundColor = '#A47DAB';
+                Object.assign(element.style, commonStyles);
+            }
             else if (isValidColor(text)) {
                 element.style.backgroundColor = text;
                 Object.assign(element.style, commonStyles);
