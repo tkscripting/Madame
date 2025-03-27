@@ -326,7 +326,4 @@ function showElementsWithoutImages() {
 
     appendSwitchAndTextToTarget();
 
-    // Listen for click events on the document
-    document.addEventListener('click', handleImageClick);
-
 })();
