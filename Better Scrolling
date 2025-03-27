@@ -25,10 +25,18 @@
     window.addEventListener('beforeunload', saveScrollPosition);
     window.addEventListener('scroll', saveScrollPosition);
 
-    // Delay restoring scroll positions to ensure elements are fully loaded
-    window.addEventListener('load', function() {
-        setTimeout(restoreScrollPosition, 3000); // Adjust the delay time as needed
-    });
+    // Function to wait for the class to be present and then restore scroll position
+    function waitForElementAndRestore() {
+        const targetElement = document.querySelector('.MuiBox-root.css-1rdqg8f');
+        if (targetElement) {
+            restoreScrollPosition(); // Restore scroll position once the element is found
+        } else {
+            setTimeout(waitForElementAndRestore, 100); // Check every 100ms until the element is found
+        }
+    }
+
+    // Start checking for the element
+    waitForElementAndRestore();
 
     // Function to hide the scrollbar
     function hideScrollbar() {
