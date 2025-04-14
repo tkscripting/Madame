@@ -1,247 +1,257 @@
 (function() {
     'use strict';
 
-    const selectedImageStyle = `
-        border: 5px solid #10f390 !important;
-        border-radius: 4px !important;
-        position: relative !important;
-        z-index: 9999 !important;
-    `;
+    // Function to check if the class is present
+    function checkForClass() {
+        const targetElement = document.querySelector('.MuiBox-root.css-7v0sgd');
+        return targetElement !== null;
+    }
 
-    let selectedImages = [];
-    let selectedVIDs = [];
-
-    function addClickListeners() {
-        const imageContainers = document.querySelectorAll('.MuiBox-root img.css-x6lorw');
-        imageContainers.forEach(image => {
-            if (!image.hasAttribute('data-listener-attached')) {
-                image.addEventListener('click', onImageClick);
-                image.setAttribute('data-listener-attached', 'true');
+    // Loop to wait for the class to be present
+    function waitForClass() {
+        const interval = setInterval(() => {
+            if (checkForClass()) {
+                clearInterval(interval); // Stop the loop once the class is found
+                startScript(); // Start the rest of the script
             }
-        });
+        }, 100); // Check every 100ms
     }
 
-    function onImageClick(event) {
-        const image = event.target;
-        const imgSrc = image.src;
-        const vid = extractVIDFromURL(imgSrc);
+    // Main script functionality
+    function startScript() {
+        const selectedImageStyle = `
+            border: 5px solid #10f390 !important;
+            border-radius: 4px !important;
+            position: relative !important;
+            z-index: 9999 !important;
+        `;
 
-        if (selectedImages.length >= 5 && !selectedImages.includes(image)) {
-            showLimitAlert();
-            return;
-        }
+        let selectedImages = [];
+        let selectedVIDs = [];
 
-        const alreadySelected = selectedImages.includes(image);
-        if (alreadySelected) {
-            image.style.border = '';
-            image.style.borderRadius = '';
-            image.style.position = '';
-            image.style.zIndex = '';
-            selectedImages = selectedImages.filter(img => img !== image);
-            selectedVIDs = selectedVIDs.filter(id => id !== vid);
-        } else {
-            image.style.border = '5px solid #10f390';
-            image.style.borderRadius = '4px';
-            image.style.position = 'relative';
-            image.style.zIndex = '10';
-            selectedImages.push(image);
-            selectedVIDs.push(vid);
-        }
-
-        toggleCompareButton();
-    }
-
-    function showLimitAlert() {
-        alert('You can only select up to 5 VIDs at once');
-    }
-
-    function extractVIDFromURL(url) {
-        const napRegex = /nap\/(\d+)\/1\//;
-        const mrpRegex = /mrp\/(\d+)\/1\//;
-
-        const napMatch = url.match(napRegex);
-        const mrpMatch = url.match(mrpRegex);
-
-        if (napMatch) {
-            return napMatch[1];
-        } else if (mrpMatch) {
-            return mrpMatch[1];
-        }
-
-        return null;
-    }
-
-    function addCompareButton() {
-        const gridContainer = document.querySelector('.MuiGrid-root.MuiGrid-container.css-1w32p15');
-        if (gridContainer && !document.getElementById('compareButton')) {
-            const compareButton = document.createElement('button');
-            compareButton.id = 'compareButton';
-            compareButton.innerText = 'Compare';
-
-            compareButton.style.cssText = `
-                -webkit-font-smoothing: antialiased;
-                text-size-adjust: 100%;
-                padding: 6px 16px;
-                height: 35px;
-                background: rgb(224, 224, 224);
-                color: rgb(158, 158, 158);
-                border: 0;
-                border-radius: 4px;
-                font-size: 0.875rem;
-                font-weight: 500;
-                text-transform: uppercase;
-                cursor: pointer;
-                display: inline-flex;
-                justify-content: center;
-                align-items: center;
-                min-width: 64px;
-                box-sizing: border-box;
-                transition: none;
-                pointer-events: auto;
-                margin-right: 15px;
-                transform: translateX(20px) translateY(15px);
-            `;
-
-            compareButton.addEventListener('click', () => {
-                if (selectedVIDs.length === 0) {
-                    showSelectionAlert();
-                } else if (selectedVIDs.length > 5) {
-                    alert('Please only select 1-5 VIDs');
-                } else {
-                    openComparisonTab();
+        function addClickListeners() {
+            const imageContainers = document.querySelectorAll('.MuiBox-root img.css-x6lorw');
+            imageContainers.forEach(image => {
+                if (!image.hasAttribute('data-listener-attached')) {
+                    image.addEventListener('click', onImageClick);
+                    image.setAttribute('data-listener-attached', 'true');
                 }
             });
-
-            gridContainer.prepend(compareButton);
         }
-    }
 
-    function showSelectionAlert() {
-        alert('Please Select:\n1 VID for high resolution images\n2-5 VIDs to compare images');
-    }
+        function onImageClick(event) {
+            const image = event.target;
+            const imgSrc = image.src;
+            const vid = extractVIDFromURL(imgSrc);
 
-    function openComparisonTab() {
-        const comparisonTab = window.open('', '_blank');
-        comparisonTab.document.title = 'Image Comparison';
-
-        comparisonTab.document.body.style.backgroundColor = 'white';
-
-        const container = comparisonTab.document.createElement('div');
-        container.style.display = 'flex';
-        container.style.flexWrap = 'wrap';
-        container.style.margin = '0';
-        container.style.padding = '0';
-        container.style.justifyContent = 'space-around';
-        comparisonTab.document.body.appendChild(container);
-
-        selectedVIDs.forEach(vid => {
-            const column = comparisonTab.document.createElement('div');
-            column.style.flex = '1 1 20%';
-            column.style.margin = '0';
-            column.style.textAlign = 'center';
-            container.appendChild(column);
-
-            const vidLink = comparisonTab.document.createElement('a');
-            vidLink.href = `https://madame.ynap.biz/retouching/${vid}`;
-            vidLink.innerText = vid;
-            vidLink.target = '_blank';
-
-            vidLink.style.display = 'block';
-            vidLink.style.textDecoration = 'none';
-            vidLink.style.color = 'black';
-            vidLink.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
-
-            column.appendChild(vidLink);
-
-            const locales = ['IN', 'OU', 'FR', 'BK', 'OU2', 'CU', 'E1', 'E2', 'E3', 'E4', 'E5'];
-            checkAndDisplayImages(vid, locales, column, comparisonTab);
-        });
-    }
-
-    function checkAndDisplayImages(vid, locales, column, comparisonTab) {
-        let selectedBaseUrl = '';
-        const netAPorterUrl = `https://cache.net-a-porter.com/variants/images/${vid}/IN/w2000_a3-4_q80.jpg`;
-        const mrPorterUrl = `https://cache.mrporter.com/variants/images/${vid}/IN/w2000_a3-4_q80.jpg`;
-
-        const imagePromises = [
-            checkImageAvailability(netAPorterUrl),
-            checkImageAvailability(mrPorterUrl)
-        ];
-
-        Promise.all(imagePromises).then(results => {
-            if (results[0]) {
-                selectedBaseUrl = 'https://cache.net-a-porter.com';
-            } else if (results[1]) {
-                selectedBaseUrl = 'https://cache.mrporter.com';
-            } else {
-                alert('No images found for this VID.');
+            if (selectedImages.length >= 5 && !selectedImages.includes(image)) {
+                showLimitAlert();
                 return;
             }
 
-            loadImagesForLocales(selectedBaseUrl, vid, locales, column, comparisonTab);
-        });
-    }
-
-    function checkImageAvailability(url) {
-        return new Promise(resolve => {
-            const img = new Image();
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
-            img.src = url;
-        });
-    }
-
-    function loadImagesForLocales(baseUrl, vid, locales, column, comparisonTab) {
-        locales.forEach(locale => {
-            const imgUrl = `${baseUrl}/variants/images/${vid}/${locale}/w2000_a3-4_q80.jpg`;
-
-            const imgElement = document.createElement('img');
-            imgElement.src = imgUrl;
-            imgElement.alt = `VID: ${vid} Locale: ${locale}`;
-            imgElement.style.margin = '0';
-            imgElement.style.padding = '0';
-            imgElement.style.width = '100%';
-            imgElement.style.objectFit = 'cover';
-
-            imgElement.addEventListener('click', () => {
-                window.open(imgUrl, '_blank');
-            });
-
-            imgElement.onerror = function() {
-                imgElement.remove();
-            };
-
-            column.appendChild(imgElement);
-        });
-    }
-
-    function toggleCompareButton() {
-        const compareButton = document.getElementById('compareButton');
-        if (compareButton) {
-            if (selectedImages.length > 0 && selectedImages.length <= 5) {
-                compareButton.style.backgroundColor = 'black';
-                compareButton.style.color = 'white';
-                compareButton.disabled = false;
+            const alreadySelected = selectedImages.includes(image);
+            if (alreadySelected) {
+                image.style.border = '';
+                image.style.borderRadius = '';
+                image.style.position = '';
+                image.style.zIndex = '';
+                selectedImages = selectedImages.filter(img => img !== image);
+                selectedVIDs = selectedVIDs.filter(id => id !== vid);
             } else {
-                compareButton.style.backgroundColor = 'rgb(224, 224, 224)';
-                compareButton.style.color = 'rgb(158, 158, 158)';
-                compareButton.disabled = true;
+                image.style.border = '5px solid #10f390';
+                image.style.borderRadius = '4px';
+                image.style.position = 'relative';
+                image.style.zIndex = '10';
+                selectedImages.push(image);
+                selectedVIDs.push(vid);
+            }
+
+            toggleCompareButton();
+        }
+
+        function showLimitAlert() {
+            alert('You can only select up to 5 VIDs at once');
+        }
+
+        function extractVIDFromURL(url) {
+            const napRegex = /nap\/(\d+)\/1\//;
+            const mrpRegex = /mrp\/(\d+)\/1\//;
+
+            const napMatch = url.match(napRegex);
+            const mrpMatch = url.match(mrpRegex);
+
+            if (napMatch) {
+                return napMatch[1];
+            } else if (mrpMatch) {
+                return mrpMatch[1];
+            }
+
+            return null;
+        }
+
+        function addCompareButton() {
+            const gridContainer = document.querySelector('.MuiGrid-root.MuiGrid-container.css-1w32p15');
+            if (gridContainer && !document.getElementById('compareButton')) {
+                const compareButton = document.createElement('button');
+                compareButton.id = 'compareButton';
+                compareButton.innerText = 'Compare';
+
+                compareButton.style.cssText = `
+                    -webkit-font-smoothing: antialiased;
+                    text-size-adjust: 100%;
+                    padding: 6px 16px;
+                    height: 35px;
+                    background: rgb(224, 224, 224);
+                    color: rgb(158, 158, 158);
+                    border: 0;
+                    border-radius: 4px;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    display: inline-flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-width: 64px;
+                    box-sizing: border-box;
+                    transition: none;
+                    pointer-events: auto;
+                    margin-right: 15px;
+                    transform: translateX(20px) translateY(15px);
+                `;
+
+                compareButton.addEventListener('click', () => {
+                    if (selectedVIDs.length === 0) {
+                        showSelectionAlert();
+                    } else if (selectedVIDs.length > 5) {
+                        alert('Please only select 1-5 VIDs');
+                    } else {
+                        openComparisonTab();
+                    }
+                });
+
+                gridContainer.prepend(compareButton);
             }
         }
+
+        function showSelectionAlert() {
+            alert('Please Select:\n1 VID for high resolution images\n2-5 VIDs to compare images');
+        }
+
+        function openComparisonTab() {
+            const comparisonTab = window.open('', '_blank');
+            comparisonTab.document.title = 'Image Comparison';
+
+            comparisonTab.document.body.style.backgroundColor = 'white';
+
+            const container = comparisonTab.document.createElement('div');
+            container.style.display = 'flex';
+            container.style.flexWrap = 'wrap';
+            container.style.margin = '0';
+            container.style.padding = '0';
+            container.style.justifyContent = 'space-around';
+            comparisonTab.document.body.appendChild(container);
+
+            selectedVIDs.forEach(vid => {
+                const column = comparisonTab.document.createElement('div');
+                column.style.flex = '1 1 20%';
+                column.style.margin = '0';
+                column.style.textAlign = 'center';
+                container.appendChild(column);
+
+                const vidLink = comparisonTab.document.createElement('a');
+                vidLink.href = `https://madame.ynap.biz/retouching/${vid}`;
+                vidLink.innerText = vid;
+                vidLink.target = '_blank';
+
+                vidLink.style.display = 'block';
+                vidLink.style.textDecoration = 'none';
+                vidLink.style.color = 'black';
+                vidLink.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
+
+                column.appendChild(vidLink);
+
+                const locales = ['IN', 'OU', 'FR', 'BK', 'OU2', 'CU', 'E1', 'E2', 'E3', 'E4', 'E5'];
+                checkAndDisplayImages(vid, locales, column, comparisonTab);
+            });
+        }
+
+        function checkAndDisplayImages(vid, locales, column, comparisonTab) {
+            let selectedBaseUrl = '';
+            const netAPorterUrl = `https://cache.net-a-porter.com/variants/images/${vid}/IN/w2000_a3-4_q80.jpg`;
+            const mrPorterUrl = `https://cache.mrporter.com/variants/images/${vid}/IN/w2000_a3-4_q80.jpg`;
+
+            const imagePromises = [
+                checkImageAvailability(netAPorterUrl),
+                checkImageAvailability(mrPorterUrl)
+            ];
+
+            Promise.all(imagePromises).then(results => {
+                if (results[0]) {
+                    selectedBaseUrl = 'https://cache.net-a-porter.com';
+                } else if (results[1]) {
+                    selectedBaseUrl = 'https://cache.mrporter.com';
+                } else {
+                    alert('No images found for this VID.');
+                    return;
+                }
+
+                loadImagesForLocales(selectedBaseUrl, vid, locales, column, comparisonTab);
+            });
+        }
+
+        function checkImageAvailability(url) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        function loadImagesForLocales(baseUrl, vid, locales, column, comparisonTab) {
+            locales.forEach(locale => {
+                const imgUrl = `${baseUrl}/variants/images/${vid}/${locale}/w2000_a3-4_q80.jpg`;
+
+                const imgElement = document.createElement('img');
+                imgElement.src = imgUrl;
+                imgElement.alt = `VID: ${vid} Locale: ${locale}`;
+                imgElement.style.margin = '0';
+                imgElement.style.padding = '0';
+                imgElement.style.width = '100%';
+                imgElement.style.objectFit = 'cover';
+
+                imgElement.addEventListener('click', () => {
+                    window.open(imgUrl, '_blank');
+                });
+
+                imgElement.onerror = function() {
+                    imgElement.remove();
+                };
+
+                column.appendChild(imgElement);
+            });
+        }
+
+        function toggleCompareButton() {
+            const compareButton = document.getElementById('compareButton');
+            if (compareButton) {
+                if (selectedImages.length > 0 && selectedImages.length <= 5) {
+                    compareButton.style.backgroundColor = 'black';
+                    compareButton.style.color = 'white';
+                    compareButton.disabled = false;
+                } else {
+                    compareButton.style.backgroundColor = 'rgb(224, 224, 224)';
+                    compareButton.style.color = 'rgb(158, 158, 158)';
+                    compareButton.disabled = true;
+                }
+            }
+        }
+
+        addClickListeners();
+        addCompareButton();
     }
 
-    setTimeout(() => {
-        addClickListeners();
-        addCompareButton();
-    }, 500);
-
-    const observer = new MutationObserver(() => {
-        addClickListeners();
-        addCompareButton();
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    // Wait for the target class to be found
+    waitForClass();
 })();
