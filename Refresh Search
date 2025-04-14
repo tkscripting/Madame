@@ -54,8 +54,11 @@
                     const elements = document.querySelectorAll('.css-1nyh8gd');
                     let allStrings = '';
                     elements.forEach((el) => {
-                        const firstString = el.textContent.split(' ')[0];
-                        allStrings += firstString + ' ';
+                        const lines = el.textContent.trim().split('\n');
+                        if (lines.length >= 2) {
+                            const secondNumber = lines[1].trim();
+                            allStrings += secondNumber + ' ';
+                        }
                     });
 
                     const inputElement = document.querySelector('.MuiInputBase-input.MuiInput-input.MuiInputBase-inputMultiline.MuiInputBase-inputAdornedEnd.css-11cus7m');
