@@ -1,0 +1,27 @@
+{
+  "Photographers": [
+    { "name": "Adam Au", "email": "jamie.lin@example.com" },
+    { "name": "Alan Pringle", "email": "jamie.lin@example.com" },
+    { "name": "Alessandra Bonizzi", "email": "alex.west@example.com" },
+    { "name": "Diane Choi", "email": "jamie.lin@example.com" },
+    { "name": "Maegan Monico", "email": "jamie.lin@example.com" },
+    { "name": "Michael Budny", "email": "morgan.yu@example.com" }
+  ],
+  "Stylists": [
+    { "name": "Mackenzie Shanley", "email": "jamie.lin@example.com" },
+    { "name": "Joanna Polatynska", "email": "jordan.banks@example.com" },
+    { "name": "Stephanie Hall", "email": "taylor.cruz@example.com" }, 
+    { "name": "Vi Phan", "email": "riley.kim@example.com" }
+  ],
+  "Managers": [
+    { "name": "Jon Bonacolta", "email": "casey.harper@example.com" },
+    { "name": "Katie Hawran", "email": "blake.ford@example.com" },
+    { "name": "Shauna Bowman", "email": "jordan.banks@example.com" },
+    { "name": "Zahra Johnson", "email": "drew.nash@example.com" }
+  ],
+  "Groups": [
+    { "name": "Creative Team", "email": "creative@example.com" },
+    { "name": "Production", "email": "production@example.com" },
+    { "name": "Retouching", "email": "retouching@example.com" }
+  ]
+}
