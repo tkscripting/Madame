@@ -1,72 +1,145 @@
 // ==UserScript==
-// @name         Runway Check
+// @name         Runway + Match Check
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Adds clear text if a Runway image might be available
+// @version      1.2
+// @description  Combines Runway Check and Matching Check with FW/FJ Skip. Highlights runway hints and matches by brand+color (ignoring "unknown"). 🟥🟣
 // @author       Tyler
 // @match        https://madame.ynap.biz/*
 // @grant        none
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=ynap.biz
+// @license      MIT
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Flag to track if matches are found
+    // ========== RUNWAY CHECK ==========
     let matchesFound = false;
 
-    // Function to check and add the <p> element
     function checkForRunway() {
-        // Get all elements with the class "MuiTypography-root MuiTypography-body2 css-1vrac05" for <p>
         const paragraphs = document.querySelectorAll('.MuiTypography-root.MuiTypography-body2.css-1vrac05');
-
-        let matched = false; // Flag to check if we found any matches
+        let matched = false;
 
         paragraphs.forEach(paragraph => {
             const text = paragraph.textContent.trim();
-
-            // Check if the text contains "RUNWAY" or "LOOK" (case-insensitive)
             if ((text.toUpperCase().includes("RUNWAY") || text.toUpperCase().includes("LOOK"))) {
-
-                // Check if the message has already been added to avoid duplicates
                 if (!paragraph.parentElement.querySelector('.runway-check-message')) {
-
-                    // Create a new <p> element with bold red text
                     const newElement = document.createElement('p');
-                    newElement.className = 'runway-check-message'; // Add a class for future reference
+                    newElement.className = 'runway-check-message';
                     newElement.style.fontWeight = 'bold';
                     newElement.style.margin = '0';
                     newElement.style.color = 'red';
-                    newElement.style.fontSize = '0.9em'; // Adjust font size slightly smaller
-                    newElement.style.whiteSpace = 'nowrap'; // Prevent wrapping, making it fit on one line
+                    newElement.style.fontSize = '0.9em';
+                    newElement.style.whiteSpace = 'nowrap';
                     newElement.textContent = 'Check for Runway';
-
-                    // Insert the new <p> after the current <p>
                     paragraph.parentNode.insertBefore(newElement, paragraph.nextSibling);
                 }
-
-                matched = true; // Set flag to true if we found at least one match
+                matched = true;
             }
         });
 
-        // If matches are found, stop the observer
         if (matched && !matchesFound) {
-            matchesFound = true; // Set the flag to indicate that matches are found
-            observer.disconnect(); // Stop the observer once matches are found
+            matchesFound = true;
+            runwayObserver.disconnect();
         }
     }
 
-    // Mutation observer to monitor changes in the DOM and run checkForRunway when necessary
-    const observer = new MutationObserver(() => {
-        checkForRunway(); // Run the function to check for matches
-    });
-
-    // Start observing the body for added or changed nodes
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Run initial check on page load
-    window.addEventListener('load', () => {
+    const runwayObserver = new MutationObserver(() => {
         checkForRunway();
     });
 
-})();
+    runwayObserver.observe(document.body, { childList: true, subtree: true });
 
+    window.addEventListener('load', () => {
+        checkForRunway();
+        findMatches();
+    });
+
+    // ========== MATCHING CHECK ==========
+    function findMatches() {
+        const headerEl = document.querySelector('.MuiTypography-root.MuiTypography-subtitle1.MuiTypography-noWrap.css-uznm26');
+        if (headerEl) {
+            const headerText = headerEl.textContent.trim();
+            if (headerText.includes('FW') || headerText.includes('FJ')) {
+                return;
+            }
+        }
+
+        const items = Array.from(document.querySelectorAll('.MuiBox-root.css-0'));
+        const data = [];
+
+        items.forEach((box, index) => {
+            const brandEl = box.querySelector('.css-biu9sh');
+            const colorEl = box.querySelector('.MuiTypography-root.MuiTypography-body2.css-1pngg4p');
+            const descEl = box.querySelector('.MuiTypography-root.MuiTypography-body2.css-1vrac05');
+            const vidEl = box.querySelector('.css-1nyh8gd');
+
+            if (brandEl && colorEl && descEl && vidEl) {
+                const brand = brandEl.textContent.trim();
+                const color = colorEl.textContent.trim();
+                let vid = vidEl.textContent.trim();
+
+                // Skip item if color is "unknown"
+                if (color.toLowerCase() === 'unknown') {
+                    return;
+                }
+
+                // Check if the VID contains multiple numbers, grab the larger one
+                const vidNumbers = vid.split(' ').map(num => num.trim());
+                if (vidNumbers.length > 1) {
+                    const largerVid = vidNumbers.reduce((max, num) => (num.length > max.length ? num : max), "");
+                    vid = largerVid;
+                }
+
+                data.push({
+                    index,
+                    box,
+                    descContainer: descEl.parentElement,
+                    brand,
+                    color,
+                    vid
+                });
+            }
+        });
+
+        data.forEach((item, i) => {
+            const matches = data.filter((other, j) =>
+                i !== j && item.brand === other.brand && item.color === other.color
+            );
+
+            if (matches.length > 0) {
+                const alreadyAppended = item.descContainer.querySelector('.match-label');
+                if (!alreadyAppended) {
+                    const p = document.createElement('p');
+                    p.textContent = 'Possible Match';
+                    p.className = 'match-label';
+                    p.style.color = '#a64ac9';
+                    p.style.margin = '4px 0 0 0';
+                    p.style.fontWeight = 'bold';
+                    item.descContainer.appendChild(p);
+                }
+
+                const existingVids = Array.from(item.descContainer.querySelectorAll('.match-vid')).map(el => el.textContent);
+
+                matches.forEach(match => {
+                    if (!existingVids.includes(match.vid)) {
+                        const vidLine = document.createElement('p');
+                        vidLine.textContent = match.vid;
+                        vidLine.className = 'match-vid';
+                        vidLine.style.color = '#a64ac9';
+                        vidLine.style.margin = '0';
+                        vidLine.style.fontSize = '0.8em';
+                        item.descContainer.appendChild(vidLine);
+                    }
+                });
+            }
+        });
+    }
+
+    const matchObserver = new MutationObserver(() => {
+        findMatches();
+    });
+
+    matchObserver.observe(document.body, { childList: true, subtree: true });
+
+})();
