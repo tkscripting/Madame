@@ -1,49 +1,32 @@
-(function() {
+(function () {
     'use strict';
 
-    // ========== RUNWAY CHECK ==========
-    let matchesFound = false;
+    // ========== RUNWAY & MATCH CHECK ==========
+    let runwayMatchedOnce = false;
 
     function checkForRunway() {
         const paragraphs = document.querySelectorAll('.MuiTypography-root.MuiTypography-body2.css-1vrac05');
-        let matched = false;
 
         paragraphs.forEach(paragraph => {
-            const text = paragraph.textContent.trim();
-            if ((text.toUpperCase().includes("RUNWAY") || text.toUpperCase().includes("LOOK"))) {
-                if (!paragraph.parentElement.querySelector('.runway-check-message')) {
-                    const newElement = document.createElement('p');
-                    newElement.className = 'runway-check-message';
-                    newElement.style.fontWeight = 'bold';
-                    newElement.style.margin = '0';
-                    newElement.style.color = 'red';
-                    newElement.style.fontSize = '0.9em';
-                    newElement.style.whiteSpace = 'nowrap';
-                    newElement.textContent = 'Check for Runway';
-                    paragraph.parentNode.insertBefore(newElement, paragraph.nextSibling);
-                }
-                matched = true;
+            const text = paragraph.textContent.trim().toUpperCase();
+            if ((text.includes("RUNWAY") || text.includes("LOOK")) &&
+                !paragraph.parentElement.querySelector('.runway-check-message')) {
+
+                const newElement = document.createElement('p');
+                newElement.className = 'runway-check-message';
+                newElement.style.fontWeight = 'bold';
+                newElement.style.margin = '0';
+                newElement.style.color = 'red';
+                newElement.style.fontSize = '0.9em';
+                newElement.style.whiteSpace = 'nowrap';
+                newElement.textContent = 'Check for Runway';
+
+                paragraph.parentNode.insertBefore(newElement, paragraph.nextSibling);
+                runwayMatchedOnce = true;
             }
         });
-
-        if (matched && !matchesFound) {
-            matchesFound = true;
-            runwayObserver.disconnect();
-        }
     }
 
-    const runwayObserver = new MutationObserver(() => {
-        checkForRunway();
-    });
-
-    runwayObserver.observe(document.body, { childList: true, subtree: true });
-
-    window.addEventListener('load', () => {
-        checkForRunway();
-        findMatches();
-    });
-
-    // ========== MATCHING CHECK ==========
     function findMatches() {
         const headerEl = document.querySelector('.MuiTypography-root.MuiTypography-subtitle1.MuiTypography-noWrap.css-uznm26');
         if (headerEl) {
@@ -67,12 +50,8 @@
                 const color = colorEl.textContent.trim();
                 let vid = vidEl.textContent.trim();
 
-                // Skip item if color is "unknown"
-                if (color.toLowerCase() === 'unknown') {
-                    return;
-                }
+                if (color.toLowerCase() === 'unknown') return;
 
-                // Check if the VID contains multiple numbers, grab the larger one
                 const vidNumbers = vid.split(' ').map(num => num.trim());
                 if (vidNumbers.length > 1) {
                     const largerVid = vidNumbers.reduce((max, num) => (num.length > max.length ? num : max), "");
@@ -124,10 +103,24 @@
         });
     }
 
-    const matchObserver = new MutationObserver(() => {
+    function safeRunAllChecks(retries = 10) {
+        if (document.querySelector('.MuiBox-root.css-0')) {
+            checkForRunway();
+            findMatches();
+        } else if (retries > 0) {
+            setTimeout(() => safeRunAllChecks(retries - 1), 500);
+        }
+    }
+
+    const unifiedObserver = new MutationObserver(() => {
+        checkForRunway();
         findMatches();
     });
 
-    matchObserver.observe(document.body, { childList: true, subtree: true });
+    unifiedObserver.observe(document.body, { childList: true, subtree: true });
+
+    window.addEventListener('load', () => {
+        safeRunAllChecks();
+    });
 
 })();
