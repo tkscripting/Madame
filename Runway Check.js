@@ -1,126 +1,62 @@
-(function () {
+(function() {
     'use strict';
 
-    // ========== RUNWAY & MATCH CHECK ==========
-    let runwayMatchedOnce = false;
+    // Flag to track if matches are found
+    let matchesFound = false;
 
+    // Function to check and add the <p> element
     function checkForRunway() {
+        // Get all elements with the class "MuiTypography-root MuiTypography-body2 css-1vrac05" for <p>
         const paragraphs = document.querySelectorAll('.MuiTypography-root.MuiTypography-body2.css-1vrac05');
 
+        let matched = false; // Flag to check if we found any matches
+
         paragraphs.forEach(paragraph => {
-            const text = paragraph.textContent.trim().toUpperCase();
-            if ((text.includes("RUNWAY") || text.includes("LOOK")) &&
-                !paragraph.parentElement.querySelector('.runway-check-message')) {
+            const text = paragraph.textContent.trim();
 
-                const newElement = document.createElement('p');
-                newElement.className = 'runway-check-message';
-                newElement.style.fontWeight = 'bold';
-                newElement.style.margin = '0';
-                newElement.style.color = 'red';
-                newElement.style.fontSize = '0.9em';
-                newElement.style.whiteSpace = 'nowrap';
-                newElement.textContent = 'Check for Runway';
+            // Check if the text contains "RUNWAY" or "LOOK" (case-insensitive)
+            if ((text.toUpperCase().includes("RUNWAY") || text.toUpperCase().includes("LOOK"))) {
 
-                paragraph.parentNode.insertBefore(newElement, paragraph.nextSibling);
-                runwayMatchedOnce = true;
-            }
-        });
-    }
+                // Check if the message has already been added to avoid duplicates
+                if (!paragraph.parentElement.querySelector('.runway-check-message')) {
 
-    function findMatches() {
-        const headerEl = document.querySelector('.MuiTypography-root.MuiTypography-subtitle1.MuiTypography-noWrap.css-uznm26');
-        if (headerEl) {
-            const headerText = headerEl.textContent.trim();
-            if (headerText.includes('FW') || headerText.includes('FJ')) {
-                return;
-            }
-        }
+                    // Create a new <p> element with bold red text
+                    const newElement = document.createElement('p');
+                    newElement.className = 'runway-check-message'; // Add a class for future reference
+                    newElement.style.fontWeight = 'bold';
+                    newElement.style.margin = '0';
+                    newElement.style.color = 'red';
+                    newElement.style.fontSize = '0.9em'; // Adjust font size slightly smaller
+                    newElement.style.whiteSpace = 'nowrap'; // Prevent wrapping, making it fit on one line
+                    newElement.textContent = 'Check for Runway';
 
-        const items = Array.from(document.querySelectorAll('.MuiBox-root.css-0'));
-        const data = [];
-
-        items.forEach((box, index) => {
-            const brandEl = box.querySelector('.css-biu9sh');
-            const colorEl = box.querySelector('.MuiTypography-root.MuiTypography-body2.css-1pngg4p');
-            const descEl = box.querySelector('.MuiTypography-root.MuiTypography-body2.css-1vrac05');
-            const vidEl = box.querySelector('.css-1nyh8gd');
-
-            if (brandEl && colorEl && descEl && vidEl) {
-                const brand = brandEl.textContent.trim();
-                const color = colorEl.textContent.trim();
-                let vid = vidEl.textContent.trim();
-
-                if (color.toLowerCase() === 'unknown') return;
-
-                const vidNumbers = vid.split(' ').map(num => num.trim());
-                if (vidNumbers.length > 1) {
-                    const largerVid = vidNumbers.reduce((max, num) => (num.length > max.length ? num : max), "");
-                    vid = largerVid;
+                    // Insert the new <p> after the current <p>
+                    paragraph.parentNode.insertBefore(newElement, paragraph.nextSibling);
                 }
 
-                data.push({
-                    index,
-                    box,
-                    descContainer: descEl.parentElement,
-                    brand,
-                    color,
-                    vid
-                });
+                matched = true; // Set flag to true if we found at least one match
             }
         });
 
-        data.forEach((item, i) => {
-            const matches = data.filter((other, j) =>
-                i !== j && item.brand === other.brand && item.color === other.color
-            );
-
-            if (matches.length > 0) {
-                const alreadyAppended = item.descContainer.querySelector('.match-label');
-                if (!alreadyAppended) {
-                    const p = document.createElement('p');
-                    p.textContent = 'Possible Match';
-                    p.className = 'match-label';
-                    p.style.color = '#a64ac9';
-                    p.style.margin = '4px 0 0 0';
-                    p.style.fontWeight = 'bold';
-                    item.descContainer.appendChild(p);
-                }
-
-                const existingVids = Array.from(item.descContainer.querySelectorAll('.match-vid')).map(el => el.textContent);
-
-                matches.forEach(match => {
-                    if (!existingVids.includes(match.vid)) {
-                        const vidLine = document.createElement('p');
-                        vidLine.textContent = match.vid;
-                        vidLine.className = 'match-vid';
-                        vidLine.style.color = '#a64ac9';
-                        vidLine.style.margin = '0';
-                        vidLine.style.fontSize = '0.8em';
-                        item.descContainer.appendChild(vidLine);
-                    }
-                });
-            }
-        });
-    }
-
-    function safeRunAllChecks(retries = 10) {
-        if (document.querySelector('.MuiBox-root.css-0')) {
-            checkForRunway();
-            findMatches();
-        } else if (retries > 0) {
-            setTimeout(() => safeRunAllChecks(retries - 1), 500);
+        // If matches are found, stop the observer
+        if (matched && !matchesFound) {
+            matchesFound = true; // Set the flag to indicate that matches are found
+            observer.disconnect(); // Stop the observer once matches are found
         }
     }
 
-    const unifiedObserver = new MutationObserver(() => {
-        checkForRunway();
-        findMatches();
+    // Mutation observer to monitor changes in the DOM and run checkForRunway when necessary
+    const observer = new MutationObserver(() => {
+        checkForRunway(); // Run the function to check for matches
     });
 
-    unifiedObserver.observe(document.body, { childList: true, subtree: true });
+    // Start observing the body for added or changed nodes
+    observer.observe(document.body, { childList: true, subtree: true });
 
+    // Run initial check on page load
     window.addEventListener('load', () => {
-        safeRunAllChecks();
+        checkForRunway();
     });
 
 })();
+
